@@ -1,0 +1,17 @@
+services:
+    burpy:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "3069:3069"
+        environment:
+            - NODE_ENV=production
+        restart: unless-stopped
+        volumes:
+            # Mount for development hot-reload (comment out in production)
+            - ./src:/app/src
+            - ./public:/app/public
+            # Exclude node_modules and .next
+            - /app/node_modules
+            - /app/.next

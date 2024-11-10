@@ -1,0 +1,177 @@
+code[class*="language-"],
+pre[class*="language-"] {
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    color: #e4e4e4;
+    font-family: inherit;
+    line-height: 1.5;
+    tab-size: 4;
+    hyphens: none;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: #6a9955;
+}
+
+.token.punctuation {
+    color: #808080;
+}
+
+.token.property,
+.token.keyword,
+.token.tag {
+    color: #9cdcfe;
+}
+
+.token.class-name {
+    color: #4ec9b0;
+}
+
+.token.boolean,
+.token.constant {
+    color: #569cd6;
+}
+
+.token.symbol,
+.token.deleted {
+    color: #f92672;
+}
+
+.token.number {
+    color: #b5cea8;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #ce9178;
+}
+
+.token.variable {
+    color: #9cdcfe;
+}
+
+.token.operator {
+    color: #808080;
+}
+
+.token.function {
+    color: #dcdcaa;
+}
+
+/* Query parameters */
+
+.token.path {
+    color: #d1e8f9;
+}
+
+.token.query-name {
+    color: #bbcdff;
+}
+
+.token.query-value {
+    color: #a5c35b;
+}
+
+.token.query-equals,
+.token.query-separator {
+    color: #e4e4e4;
+}
+
+/* Headers */
+
+.token.header-name {
+    color: #d1e8f9;
+    font-weight: 500;
+}
+
+.token.header-value {
+    color: #e4e4e4;
+}
+
+.token.cookie-name {
+    color: #bbcdff;
+    font-weight: 500;
+}
+
+.token.cookie-value {
+    color: #a5c35b;
+}
+
+/* HTTP Status Codes - 2xx Success */
+
+.token.status-code-200 {
+    color: #22c55e; /* Green */
+    font-weight: 600;
+}
+.token.status-text-200 {
+    color: #15803d; /* Darker green */
+}
+
+/* HTTP Status Codes - 3xx Redirection */
+
+.token.status-code-300 {
+    color: #3b82f6; /* Blue */
+    font-weight: 600;
+}
+.token.status-text-300 {
+    color: #1d4ed8; /* Darker blue */
+}
+
+/* HTTP Status Codes - 4xx Client Error */
+
+.token.status-code-400 {
+    color: #f97316; /* Orange */
+    font-weight: 600;
+}
+.token.status-text-400 {
+    color: #c2410c; /* Darker orange */
+}
+
+/* HTTP Status Codes - 5xx Server Error */
+
+.token.status-code-500 {
+    color: #ef4444; /* Red */
+    font-weight: 600;
+}
+.token.status-text-500 {
+    color: #b91c1c; /* Darker red */
+}
+
+/* JSON specific */
+
+.token.property {
+    color: #9cdcfe;
+}
+
+.token.string {
+    color: #ce9178;
+}
+
+.token.number {
+    color: #b5cea8;
+}
+
+.token.boolean {
+    color: #569cd6;
+    font-weight: 500;
+}
+
+.token.null {
+    color: #569cd6;
+    font-weight: 500;
+}
+
+.token.http-method {
+    color: #8b5cf6;
+    font-weight: 600;
+}
