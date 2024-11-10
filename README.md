@@ -36,7 +36,9 @@ A modern, fast, and user-friendly web application for viewing Burp Suite Communi
 git clone https://github.com/Boiln/burpy.git
 ```
 
+```bash
 cd burpy
+```
 
 2. Install dependencies:
 
