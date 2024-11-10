@@ -65,4 +65,4 @@ docker-compose up -d
 # Media
 
 Burpy V1 (11.9.24)
-![burpy_v1](https://i.imgur.com/EXXNW7G.gif)
+![burpy_v1](https://github.com/user-attachments/assets/704e13df-b14c-4a86-93e7-22a336056368)
