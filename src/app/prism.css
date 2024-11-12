@@ -68,23 +68,43 @@ pre[class*="language-"] {
     color: #dcdcaa;
 }
 
-/* Query parameters */
+/* URL and Query parameters */
+.token.url {
+    color: #d1e8f9;
+}
 
 .token.path {
     color: #d1e8f9;
 }
 
-.token.query-name {
+.token.query {
     color: #bbcdff;
 }
 
-.token.query-value {
+.token.query-delimiter {
+    color: #e4e4e4;
+}
+
+.token.query-param {
+    color: #bbcdff;
+}
+
+.token.param-name {
+    color: #bbcdff;
+}
+
+.token.param-value {
     color: #a5c35b;
 }
 
-.token.query-equals,
 .token.query-separator {
     color: #e4e4e4;
+}
+
+/* Existing styles */
+.token.http-method {
+    color: #8b5cf6;
+    font-weight: 600;
 }
 
 /* Headers */
@@ -169,9 +189,4 @@ pre[class*="language-"] {
 .token.null {
     color: #569cd6;
     font-weight: 500;
-}
-
-.token.http-method {
-    color: #8b5cf6;
-    font-weight: 600;
 }

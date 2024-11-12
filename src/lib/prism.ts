@@ -10,21 +10,31 @@ if (typeof window !== "undefined") {
     Prism.languages.http = {
         "request-line": {
             pattern:
-                /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (\/[^?\s]+)(\?[^\s]+)? (HTTP\/[\d.]+)/m,
+                /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (.+?) (HTTP\/[\d.]+)/m,
             inside: {
                 method: {
                     pattern:
                         /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT)/,
                     alias: "http-method",
                 },
-                path: /\/[^?\s]+/,
-                query: {
-                    pattern: /\?[^\s]+/,
+                url: {
+                    pattern: /(.+?)(?=\s+HTTP\/)/,
                     inside: {
-                        "query-name": /[^=&]+(?==)/g,
-                        "query-equals": /=/g,
-                        "query-value": /[^=&]+(?=&|$)/g,
-                        "query-separator": /&/g,
+                        path: /^(?:\/[^?#\s]*)/,
+                        query: {
+                            pattern: /\?[^#\s]*/,
+                            inside: {
+                                "query-delimiter": /^\?/,
+                                "query-param": {
+                                    pattern: /([^&=]+)=([^&]*)/g,
+                                    inside: {
+                                        "param-name": /^[^=]+/,
+                                        "param-value": /(?<==)[^&]*/,
+                                    },
+                                },
+                                "query-separator": /&/,
+                            },
+                        },
                     },
                 },
                 "http-version": /HTTP\/[\d.]+$/,
