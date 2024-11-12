@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 interface SyntaxHighlighterProps {
     language: string;
@@ -16,21 +17,30 @@ export function SyntaxHighlighter({
     type,
 }: SyntaxHighlighterProps) {
     const [highlightedCode, setHighlightedCode] = useState(content);
+    const { ref, inView } = useInView({
+        triggerOnce: true,
+        threshold: 0.1,
+    });
 
     useEffect(() => {
-        // Import Prism dynamically on the client side
-        import("~/lib/prism").then((Prism) => {
-            const highlighted = Prism.default.highlight(
+        if (!inView) return;
+
+        const highlightCode = async () => {
+            const Prism = (await import("~/lib/prism")).default;
+            const highlighted = Prism.highlight(
                 content,
-                Prism.default.languages[language],
+                Prism.languages[language],
                 language
             );
             setHighlightedCode(highlighted);
-        });
-    }, [content, language]);
+        };
+
+        highlightCode();
+    }, [content, language, inView]);
 
     return (
         <pre
+            ref={ref}
             className={`language-${language}`}
             style={{
                 background: "none",
@@ -50,7 +60,9 @@ export function SyntaxHighlighter({
                     whiteSpace: wrap ? "pre-wrap" : "pre",
                     wordBreak: wrap ? "break-word" : "normal",
                 }}
-                dangerouslySetInnerHTML={{ __html: highlightedCode }}
+                dangerouslySetInnerHTML={{
+                    __html: inView ? highlightedCode : content,
+                }}
             />
         </pre>
     );
