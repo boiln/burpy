@@ -38,7 +38,7 @@ export function SessionTable({
                                 }`}
                                 onClick={() => onSelectItem(item)}
                             >
-                                <TableCell className="font-mono text-muted-foreground">
+                                <TableCell className="text-muted-foreground">
                                     {index + 1}
                                 </TableCell>
                                 <TableCell className="font-medium">

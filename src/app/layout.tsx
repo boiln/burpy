@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "~/components/ThemeProvider";
+import { JetBrains_Mono } from "next/font/google";
 import "~/app/globals.css";
 import "~/app/prism.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ["latin"],
+    // Include regular and medium weights for better readability
+    weight: ["400", "500"],
+    // Enable variable font for better performance
+    variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
     title: "Burpy",
@@ -24,7 +30,7 @@ export default function RootLayout({
             <head>
                 <link rel="icon" href="favicon.ico" sizes="any" />
             </head>
-            <body className={inter.className}>
+            <body className={`${jetbrainsMono.variable} font-mono antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"
