@@ -10,7 +10,7 @@ export function useMessageFormatter() {
 
         const contentType = contentTypeMatch[1].toLowerCase();
 
-        // Map content types to Prism language identifiers
+        if (contentType.includes("x-component")) return "json";
         if (contentType.includes("application/json")) return "json";
         if (contentType.includes("text/html")) return "html";
         if (
@@ -30,22 +30,47 @@ export function useMessageFormatter() {
         return "text";
     };
 
+    const formatNextJsLine = (line: string): string => {
+        try {
+            // Match the pattern "number:JSON" and extract just the JSON part
+            const match = line.match(/^(\d+):(.+)$/);
+            if (match) {
+                const [_, number, jsonContent] = match;
+                const parsed = JSON.parse(jsonContent);
+                // Format with 4 spaces indentation
+                const formatted = JSON.stringify(parsed, null, 4);
+                // Preserve the line number prefix
+                return `${number}:${formatted}`;
+            }
+            return line;
+        } catch (e) {
+            return line;
+        }
+    };
+
     const formatContent = (content: string, language: string): string => {
         if (!content.trim()) return content;
 
         try {
-            switch (language) {
-                case "json":
-                    return JSON.stringify(JSON.parse(content), null, 4);
-                case "html":
-                    // Use html-prettify or similar library
-                    return content;
-                case "xml":
-                    // Use xml-formatter or similar library
-                    return content;
-                default:
-                    return content;
+            if (language === "json") {
+                // Split content into lines and process each line
+                const lines = content.split("\n");
+                const formattedLines = lines.map((line) => {
+                    // Check if line matches Next.js format (starts with number:)
+                    if (line.match(/^\d+:/)) {
+                        return formatNextJsLine(line);
+                    }
+                    // Regular JSON formatting
+                    try {
+                        const parsed = JSON.parse(line);
+                        return JSON.stringify(parsed, null, 4);
+                    } catch {
+                        return line;
+                    }
+                });
+                return formattedLines.join("\n");
             }
+            return content;
         } catch (e) {
             console.error(`Failed to format ${language} content:`, e);
             return content;
