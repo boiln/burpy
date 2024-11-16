@@ -1,16 +1,18 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
+
+import { Indent, WrapText } from "lucide-react";
+
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Toggle } from "~/components/ui/toggle";
-import { Indent, WrapText } from "lucide-react";
-import { HttpMessageRenderer } from "../shared/HttpMessageRenderer";
-import type { ContentPanelProps } from "~/types/session";
-import { decodeBase64 } from "~/lib/burpParser";
-import { ContentContextMenu } from "../shared/ContentContextMenu";
 import { useMessageFormatter } from "~/hooks/session/useMessageFormatter";
-
 import { useToast } from "~/hooks/use-toast";
-import { useEffect, useState, useRef } from "react";
+import { decodeBase64 } from "~/lib/burpParser";
+import type { ContentPanelProps } from "~/types/session";
+
+import { ContentContextMenu } from "../shared/ContentContextMenu";
+import { HttpMessageRenderer } from "../shared/HttpMessageRenderer";
 
 export function ContentPanel({
     item,
@@ -24,9 +26,7 @@ export function ContentPanel({
     const [isMounted, setIsMounted] = useState(false);
     const content = item?.[type] || { value: "", base64: false };
     const { formatMessage } = useMessageFormatter();
-    const decodedContent = content.base64
-        ? decodeBase64(content.value)
-        : content.value;
+    const decodedContent = content.base64 ? decodeBase64(content.value) : content.value;
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -165,11 +165,9 @@ export function ContentPanel({
     }
 
     return (
-        <div className="flex-1 flex flex-col min-w-0 isolate">
-            <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                </h3>
+        <div className="isolate flex min-w-0 flex-1 flex-col">
+            <div className="mb-2 flex items-center justify-between">
+                <h3 className="font-semibold">{type.charAt(0).toUpperCase() + type.slice(1)}</h3>
                 <div className="flex gap-2">
                     <Toggle
                         pressed={wrap}
@@ -191,7 +189,7 @@ export function ContentPanel({
             </div>
             <ContentContextMenu onCopy={handleCopy}>
                 <ScrollArea
-                    className="flex-grow border rounded-md bg-background"
+                    className="flex-grow rounded-md border bg-background"
                     style={{ isolation: "isolate" }}
                 >
                     <div

@@ -1,7 +1,8 @@
 "use client";
 
-import { SyntaxHighlighter } from "./SyntaxHighlighter";
 import { useMessageFormatter } from "~/hooks/session/useMessageFormatter";
+
+import { SyntaxHighlighter } from "./SyntaxHighlighter";
 
 interface HttpMessageRendererProps {
     content: string;
@@ -10,12 +11,7 @@ interface HttpMessageRendererProps {
     type: "request" | "response";
 }
 
-export function HttpMessageRenderer({
-    content,
-    wrap,
-    prettify,
-    type,
-}: HttpMessageRendererProps) {
+export function HttpMessageRenderer({ content, wrap, prettify, type }: HttpMessageRendererProps) {
     const { formatMessage } = useMessageFormatter();
     const { headers, body, language } = formatMessage(content, {
         wrap,
@@ -29,13 +25,8 @@ export function HttpMessageRenderer({
     return (
         <div className="font-mono" data-type={type}>
             {/* First line (HTTP method/status) */}
-            <div className="py-4 px-4 border-b border-border">
-                <SyntaxHighlighter
-                    language="http"
-                    content={firstLine}
-                    wrap={wrap}
-                    type={type}
-                />
+            <div className="border-b border-border px-4 py-4">
+                <SyntaxHighlighter language="http" content={firstLine} wrap={wrap} type={type} />
             </div>
 
             {/* Headers */}

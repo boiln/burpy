@@ -78,9 +78,7 @@ export function useMessageFormatter() {
                             return JSON.stringify(parsed, null, 4);
                         } catch {
                             // If parsing fails, try to find JSON within the line
-                            const jsonMatch = line.match(
-                                /({[\s\S]*}|\[[\s\S]*\])/
-                            );
+                            const jsonMatch = line.match(/({[\s\S]*}|\[[\s\S]*\])/);
                             if (jsonMatch) {
                                 try {
                                     const parsed = JSON.parse(jsonMatch[0]);

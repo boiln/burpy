@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -30,25 +31,25 @@ export function ThemeToggle() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="bg-accent text-accent-foreground border-border"
+                className="border-border bg-accent text-accent-foreground"
             >
                 <DropdownMenuItem
                     onClick={() => setTheme("light")}
-                    className="hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground cursor-pointer"
+                    className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
                 >
                     <Sun className="mr-2 h-4 w-4" />
                     <span>Light</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={() => setTheme("dark")}
-                    className="hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground cursor-pointer"
+                    className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
                 >
                     <Moon className="mr-2 h-4 w-4" />
                     <span>Dark</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={() => setTheme("system")}
-                    className="hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground cursor-pointer"
+                    className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
                 >
                     <span className="mr-2">🖥️</span>
                     <span>System</span>

@@ -11,11 +11,10 @@ export function Pagination({
     onPageChange,
 }: PaginationProps) {
     return (
-        <div className="flex items-center justify-between mt-4 py-1">
+        <div className="mt-4 flex items-center justify-between py-1">
             <div className="text-sm text-muted-foreground">
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
-                {totalItems} items
+                {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
             </div>
             <div className="flex gap-2">
                 <Button
@@ -29,9 +28,7 @@ export function Pagination({
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                        onPageChange(Math.min(totalPages, currentPage + 1))
-                    }
+                    onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                 >
                     Next

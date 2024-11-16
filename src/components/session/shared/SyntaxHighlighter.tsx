@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+
 import { useInView } from "react-intersection-observer";
 
 interface SyntaxHighlighterProps {
@@ -10,12 +11,7 @@ interface SyntaxHighlighterProps {
     type: "request" | "response";
 }
 
-export function SyntaxHighlighter({
-    language,
-    content,
-    wrap,
-    type,
-}: SyntaxHighlighterProps) {
+export function SyntaxHighlighter({ language, content, wrap, type }: SyntaxHighlighterProps) {
     const [highlightedCode, setHighlightedCode] = useState(content);
     const { ref } = useInView({
         triggerOnce: true,
@@ -25,11 +21,7 @@ export function SyntaxHighlighter({
     useEffect(() => {
         const highlightCode = async () => {
             const Prism = (await import("~/lib/prism")).default;
-            const highlighted = Prism.highlight(
-                content,
-                Prism.languages[language],
-                language
-            );
+            const highlighted = Prism.highlight(content, Prism.languages[language], language);
             setHighlightedCode(highlighted);
         };
 

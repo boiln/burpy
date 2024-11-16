@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { Upload } from "lucide-react";
+
 import { useToast } from "~/hooks/use-toast";
 import { parseBurpXml } from "~/lib/burpParser";
 import { BurpSession } from "~/types/burp";
@@ -14,9 +16,7 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
-    const handleFileUpload = async (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -45,17 +45,14 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
     };
 
     return (
-        <div className="flex items-center justify-center w-full max-w-2xl">
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
+        <div className="flex w-full max-w-2xl items-center justify-center">
+            <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed hover:bg-gray-50 dark:hover:bg-gray-800">
+                <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                    <Upload className="mb-2 h-8 w-8 text-gray-500" />
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                         {loading ? (
                             <span className="flex items-center">
-                                <svg
-                                    className="animate-spin h-5 w-5 mr-3"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="mr-3 h-5 w-5 animate-spin" viewBox="0 0 24 24">
                                     <circle
                                         className="opacity-25"
                                         cx="12"

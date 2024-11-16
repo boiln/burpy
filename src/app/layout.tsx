@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
-import { ThemeProvider } from "~/components/ThemeProvider";
 import { JetBrains_Mono } from "next/font/google";
+
+import { ThemeProvider } from "~/components/ThemeProvider";
+
+import type { Metadata } from "next";
+
 import "~/app/globals.css";
 import "~/app/prism.css";
 
@@ -20,22 +23,14 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="icon" href="favicon.ico" sizes="any" />
             </head>
             <body className={`${jetbrainsMono.variable} antialiased`}>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="dark"
-                    enableSystem
-                >
+                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
                     {children}
                 </ThemeProvider>
             </body>

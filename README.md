@@ -59,7 +59,7 @@ The application will be available at `http://localhost:3069`
 Build and run using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 # Media

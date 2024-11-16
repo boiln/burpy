@@ -13,8 +13,7 @@ if (typeof window !== "undefined") {
                 /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (.+?) (HTTP\/[\d.]+)/m,
             inside: {
                 method: {
-                    pattern:
-                        /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT)/,
+                    pattern: /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT)/,
                     alias: "http-method",
                 },
                 url: {

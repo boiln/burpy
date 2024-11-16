@@ -1,5 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
+import { Copy, FileCode, FileJson, FileText, Link, FileInput, Cookie, Code } from "lucide-react";
+
 import {
     ContextMenu,
     ContextMenuContent,
@@ -10,25 +14,8 @@ import {
     ContextMenuSubTrigger,
     ContextMenuTrigger,
 } from "~/components/ui/context-menu";
-import {
-    Copy,
-    FileCode,
-    FileJson,
-    FileText,
-    Link,
-    FileInput,
-    Cookie,
-    Code,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import {
-    decodeBase64,
-    urlDecode,
-    htmlDecode,
-    jsonFormat,
-    jsonMinify,
-} from "~/lib/burpParser";
 import { useToast } from "~/hooks/use-toast";
+import { decodeBase64, urlDecode, htmlDecode, jsonFormat, jsonMinify } from "~/lib/burpParser";
 
 interface ContentContextMenuProps {
     children: React.ReactNode;
@@ -40,10 +27,7 @@ interface ContentContextMenuProps {
     };
 }
 
-export function ContentContextMenu({
-    children,
-    onCopy,
-}: ContentContextMenuProps) {
+export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps) {
     const [hasSelection, setHasSelection] = useState(false);
     const { toast } = useToast();
 
@@ -55,8 +39,7 @@ export function ContentContextMenu({
         };
 
         document.addEventListener("selectionchange", checkSelection);
-        return () =>
-            document.removeEventListener("selectionchange", checkSelection);
+        return () => document.removeEventListener("selectionchange", checkSelection);
     }, []);
 
     const getSelectedText = () => {
@@ -163,15 +146,11 @@ export function ContentContextMenu({
                                     HTML Decode
                                 </ContextMenuItem>
                                 <ContextMenuSeparator />
-                                <ContextMenuItem
-                                    onClick={handleDecode.jsonFormat}
-                                >
+                                <ContextMenuItem onClick={handleDecode.jsonFormat}>
                                     <FileJson className="mr-2 h-4 w-4" />
                                     JSON Format
                                 </ContextMenuItem>
-                                <ContextMenuItem
-                                    onClick={handleDecode.jsonMinify}
-                                >
+                                <ContextMenuItem onClick={handleDecode.jsonMinify}>
                                     <FileJson className="mr-2 h-4 w-4" />
                                     JSON Minify
                                 </ContextMenuItem>
