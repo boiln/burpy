@@ -30,7 +30,7 @@ export default function RootLayout({
             <head>
                 <link rel="icon" href="favicon.ico" sizes="any" />
             </head>
-            <body className={`${jetbrainsMono.variable} font-mono antialiased`}>
+            <body className={`${jetbrainsMono.variable} antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"

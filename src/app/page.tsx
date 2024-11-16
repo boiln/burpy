@@ -10,7 +10,7 @@ export default function Home() {
     const [session, setSession] = useState<BurpSession | null>(null);
 
     return (
-        <main className="min-h-screen bg-background p-4">
+        <main className="min-h-screen bg-background">
             <div
                 className={
                     !session ? "h-screen flex items-center justify-center" : ""
