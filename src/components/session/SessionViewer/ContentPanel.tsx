@@ -10,7 +10,7 @@ import { ContentContextMenu } from "../shared/ContentContextMenu";
 import { useMessageFormatter } from "~/hooks/session/useMessageFormatter";
 
 import { useToast } from "~/hooks/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export function ContentPanel({
     item,
@@ -27,10 +27,17 @@ export function ContentPanel({
     const decodedContent = content.base64
         ? decodeBase64(content.value)
         : content.value;
+    const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (contentRef.current) {
+            contentRef.current.scrollTop = 0;
+        }
+    }, [item]);
 
     const copyTextToClipboard = async (text: string): Promise<void> => {
         if (!isMounted) return;
@@ -187,12 +194,17 @@ export function ContentPanel({
                     className="flex-grow border rounded-md bg-background"
                     style={{ isolation: "isolate" }}
                 >
-                    <HttpMessageRenderer
-                        content={decodedContent}
-                        wrap={wrap}
-                        prettify={prettify}
-                        type={type}
-                    />
+                    <div
+                        ref={contentRef}
+                        className="relative flex-1 overflow-auto rounded-md bg-muted/30"
+                    >
+                        <HttpMessageRenderer
+                            content={decodedContent}
+                            wrap={wrap}
+                            prettify={prettify}
+                            type={type}
+                        />
+                    </div>
                 </ScrollArea>
             </ContentContextMenu>
         </div>

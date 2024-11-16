@@ -17,14 +17,12 @@ export function SyntaxHighlighter({
     type,
 }: SyntaxHighlighterProps) {
     const [highlightedCode, setHighlightedCode] = useState(content);
-    const { ref, inView } = useInView({
+    const { ref } = useInView({
         triggerOnce: true,
-        threshold: 0.1,
+        threshold: 0,
     });
 
     useEffect(() => {
-        if (!inView) return;
-
         const highlightCode = async () => {
             const Prism = (await import("~/lib/prism")).default;
             const highlighted = Prism.highlight(
@@ -36,7 +34,7 @@ export function SyntaxHighlighter({
         };
 
         highlightCode();
-    }, [content, language, inView]);
+    }, [content, language]);
 
     return (
         <pre
@@ -61,7 +59,7 @@ export function SyntaxHighlighter({
                     wordBreak: wrap ? "break-word" : "normal",
                 }}
                 dangerouslySetInnerHTML={{
-                    __html: inView ? highlightedCode : content,
+                    __html: highlightedCode,
                 }}
             />
         </pre>
