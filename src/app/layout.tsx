@@ -1,6 +1,7 @@
 import { JetBrains_Mono } from "next/font/google";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import type { Metadata } from "next";
 
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </head>
             <body className={`${jetbrainsMono.variable} antialiased`}>
                 <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-                    {children}
+                    <TooltipProvider>
+                        {children}
+                    </TooltipProvider>
                 </ThemeProvider>
             </body>
         </html>

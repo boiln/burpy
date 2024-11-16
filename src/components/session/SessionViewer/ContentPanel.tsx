@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 
-import { Indent, WrapText } from "lucide-react";
+import { Indent, WrapText, Code2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toggle } from "@/components/ui/toggle";
@@ -169,22 +170,33 @@ export function ContentPanel({
             <div className="mb-2 flex items-center justify-between">
                 <h3 className="font-semibold">{type.charAt(0).toUpperCase() + type.slice(1)}</h3>
                 <div className="flex gap-2">
-                    <Toggle
-                        pressed={wrap}
-                        onPressedChange={setWrap}
-                        size="sm"
-                        aria-label="Toggle word wrap"
-                    >
-                        <WrapText className="h-4 w-4" />
-                    </Toggle>
-                    <Toggle
-                        pressed={prettify}
-                        onPressedChange={setPrettify}
-                        size="sm"
-                        aria-label="Toggle JSON format"
-                    >
-                        <Indent className="h-4 w-4" />
-                    </Toggle>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Toggle
+                                pressed={wrap}
+                                onPressedChange={setWrap}
+                                size="sm"
+                                aria-label="Toggle word wrap"
+                            >
+                                <WrapText className="h-4 w-4" />
+                            </Toggle>
+                        </TooltipTrigger>
+                        <TooltipContent>Toggle word wrap</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Toggle
+                                pressed={prettify}
+                                onPressedChange={setPrettify}
+                                size="sm"
+                                aria-label="Toggle code formatting"
+                                className="font-mono"
+                            >
+                                <Code2 className="h-4 w-4" />
+                            </Toggle>
+                        </TooltipTrigger>
+                        <TooltipContent>Format code</TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
             <ContentContextMenu onCopy={handleCopy}>
