@@ -28,18 +28,18 @@ export function SessionTable({ items, selectedItem, onSelectItem }: SessionTable
         <div className="rounded-md border">
             <div ref={parentRef} className="overflow-auto" style={{ height: "40vh" }}>
                 <div style={{ position: "relative" }}>
-                    <table className="w-full border-collapse">
-                        <thead className="sticky top-0 z-10 bg-background">
-                            <tr>
-                                <th className="w-14 p-3 text-left font-medium">#</th>
-                                <th className="w-24 p-3 text-left font-medium">Method</th>
-                                <th className="p-3 text-left font-medium">URL</th>
-                                <th className="w-24 p-3 text-left font-medium">Status</th>
-                                <th className="w-24 p-3 text-left font-medium">Length</th>
-                                <th className="w-32 p-3 text-left font-medium">MIME Type</th>
-                            </tr>
-                        </thead>
-                    </table>
+                    <Table>
+                        <TableHeader className="sticky top-0 z-10 bg-background">
+                            <TableRow>
+                                <TableHead className="w-14">#</TableHead>
+                                <TableHead className="w-24">Method</TableHead>
+                                <TableHead>URL</TableHead>
+                                <TableHead className="w-24">Status</TableHead>
+                                <TableHead className="w-24">Length</TableHead>
+                                <TableHead className="w-32">MIME Type</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                    </Table>
 
                     <div
                         style={{
@@ -62,20 +62,26 @@ export function SessionTable({ items, selectedItem, onSelectItem }: SessionTable
                                     }}
                                     onClick={() => onSelectItem(item)}
                                 >
-                                    <table className="w-full border-collapse">
-                                        <tr>
-                                            <td className="w-14 p-3 text-muted-foreground">
-                                                {virtualRow.index + 1}
-                                            </td>
-                                            <td className="w-24 p-3 font-medium">{item.method}</td>
-                                            <td className="max-w-[500px] truncate p-3">
-                                                {item.url}
-                                            </td>
-                                            <td className="w-24 p-3">{item.status}</td>
-                                            <td className="w-24 p-3">{item.responselength}</td>
-                                            <td className="w-32 p-3">{item.mimetype}</td>
-                                        </tr>
-                                    </table>
+                                    <Table>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell className="w-14 text-muted-foreground">
+                                                    {virtualRow.index + 1}
+                                                </TableCell>
+                                                <TableCell className="w-24 font-medium">
+                                                    {item.method}
+                                                </TableCell>
+                                                <TableCell className="max-w-[500px] truncate">
+                                                    {item.url}
+                                                </TableCell>
+                                                <TableCell className="w-24">{item.status}</TableCell>
+                                                <TableCell className="w-24">
+                                                    {item.responselength}
+                                                </TableCell>
+                                                <TableCell className="w-32">{item.mimetype}</TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             );
                         })}
