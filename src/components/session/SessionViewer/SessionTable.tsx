@@ -74,11 +74,15 @@ export function SessionTable({ items, selectedItem, onSelectItem }: SessionTable
                                                 <TableCell className="max-w-[500px] truncate">
                                                     {item.url}
                                                 </TableCell>
-                                                <TableCell className="w-24">{item.status}</TableCell>
+                                                <TableCell className="w-24">
+                                                    {item.status}
+                                                </TableCell>
                                                 <TableCell className="w-24">
                                                     {item.responselength}
                                                 </TableCell>
-                                                <TableCell className="w-32">{item.mimetype}</TableCell>
+                                                <TableCell className="w-32">
+                                                    {item.mimetype}
+                                                </TableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>

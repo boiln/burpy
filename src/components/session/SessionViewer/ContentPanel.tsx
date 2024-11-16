@@ -166,57 +166,57 @@ export function ContentPanel({
     }
 
     return (
-        <div className="isolate flex min-w-0 flex-1 flex-col">
-            <div className="mb-2 flex items-center justify-between">
-                <h3 className="font-semibold">{type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-                <div className="flex gap-2">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Toggle
-                                pressed={wrap}
-                                onPressedChange={setWrap}
-                                size="sm"
-                                aria-label="Toggle word wrap"
-                            >
-                                <WrapText className="h-4 w-4" />
-                            </Toggle>
-                        </TooltipTrigger>
-                        <TooltipContent>Toggle word wrap</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Toggle
-                                pressed={prettify}
-                                onPressedChange={setPrettify}
-                                size="sm"
-                                aria-label="Toggle code formatting"
-                                className="font-mono"
-                            >
-                                <Code2 className="h-4 w-4" />
-                            </Toggle>
-                        </TooltipTrigger>
-                        <TooltipContent>Format code</TooltipContent>
-                    </Tooltip>
+        <div className="flex h-full flex-col">
+            <div className="shrink-0 border-b p-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </h3>
+                    <div className="flex gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Toggle
+                                    pressed={wrap}
+                                    onPressedChange={setWrap}
+                                    size="sm"
+                                    aria-label="Toggle word wrap"
+                                >
+                                    <WrapText className="h-4 w-4" />
+                                </Toggle>
+                            </TooltipTrigger>
+                            <TooltipContent>Wrap</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Toggle
+                                    pressed={prettify}
+                                    onPressedChange={setPrettify}
+                                    size="sm"
+                                    aria-label="Toggle code formatting"
+                                    className="font-mono"
+                                >
+                                    <Code2 className="h-4 w-4" />
+                                </Toggle>
+                            </TooltipTrigger>
+                            <TooltipContent>Beautify</TooltipContent>
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
-            <ContentContextMenu onCopy={handleCopy}>
-                <ScrollArea
-                    className="flex-grow rounded-md border bg-background"
-                    style={{ isolation: "isolate" }}
-                >
-                    <div
-                        ref={contentRef}
-                        className="relative flex-1 overflow-auto rounded-md bg-muted/30"
-                    >
-                        <HttpMessageRenderer
-                            content={decodedContent}
-                            wrap={wrap}
-                            prettify={prettify}
-                            type={type}
-                        />
-                    </div>
-                </ScrollArea>
-            </ContentContextMenu>
+            <div className="min-h-0 flex-1">
+                <ContentContextMenu onCopy={handleCopy}>
+                    <ScrollArea className="h-full">
+                        <div ref={contentRef} className="p-4">
+                            <HttpMessageRenderer
+                                content={decodedContent}
+                                wrap={wrap}
+                                prettify={prettify}
+                                type={type}
+                            />
+                        </div>
+                    </ScrollArea>
+                </ContentContextMenu>
+            </div>
         </div>
     );
 }
