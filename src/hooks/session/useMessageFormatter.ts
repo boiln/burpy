@@ -6,28 +6,42 @@ interface FormatOptions {
 export function useMessageFormatter() {
     const getLanguageFromContentType = (headers: string): string => {
         const contentTypeMatch = headers.match(/content-type:\s*([^\r\n]+)/i);
-        if (!contentTypeMatch) return "text";
+        if (!contentTypeMatch) {
+            // Try to detect JSON even without content-type header
+            return detectJsonContent(headers) ? "json" : "text";
+        }
 
         const contentType = contentTypeMatch[1].toLowerCase();
 
-        if (contentType.includes("x-component")) return "json";
-        if (contentType.includes("application/json")) return "json";
+        if (
+            contentType.includes("json") ||
+            contentType.includes("x-json") ||
+            contentType.includes("x-javascript")
+        )
+            return "json";
         if (contentType.includes("text/html")) return "html";
-        if (
-            contentType.includes("text/xml") ||
-            contentType.includes("application/xml")
-        )
-            return "xml";
-        if (
-            contentType.includes("text/javascript") ||
-            contentType.includes("application/javascript")
-        )
-            return "javascript";
+        if (contentType.includes("xml")) return "xml";
+        if (contentType.includes("javascript")) return "javascript";
         if (contentType.includes("text/css")) return "css";
         if (contentType.includes("text/markdown")) return "markdown";
         if (contentType.includes("text/yaml")) return "yaml";
 
-        return "text";
+        // Try to detect JSON even with different content-type
+        return detectJsonContent(headers) ? "json" : "text";
+    };
+
+    const detectJsonContent = (content: string): boolean => {
+        try {
+            // Check if content starts with { or [ after trimming whitespace
+            const trimmed = content.trim();
+            if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) {
+                return false;
+            }
+            JSON.parse(trimmed);
+            return true;
+        } catch {
+            return false;
+        }
     };
 
     const formatNextJsLine = (line: string): string => {
@@ -53,20 +67,31 @@ export function useMessageFormatter() {
 
         try {
             if (language === "json") {
-                // Split content into lines and process each line
+                // Split content into lines
                 const lines = content.split("\n");
                 const formattedLines = lines.map((line) => {
-                    // Check if line matches Next.js format (starts with number:)
-                    if (line.match(/^\d+:/)) {
-                        return formatNextJsLine(line);
+                    const trimmed = line.trim();
+                    // Check for JSON-like content
+                    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                        try {
+                            const parsed = JSON.parse(trimmed);
+                            return JSON.stringify(parsed, null, 4);
+                        } catch {
+                            // If parsing fails, try to find JSON within the line
+                            const jsonMatch = line.match(
+                                /({[\s\S]*}|\[[\s\S]*\])/
+                            );
+                            if (jsonMatch) {
+                                try {
+                                    const parsed = JSON.parse(jsonMatch[0]);
+                                    return JSON.stringify(parsed, null, 4);
+                                } catch {
+                                    return line;
+                                }
+                            }
+                        }
                     }
-                    // Regular JSON formatting
-                    try {
-                        const parsed = JSON.parse(line);
-                        return JSON.stringify(parsed, null, 4);
-                    } catch {
-                        return line;
-                    }
+                    return line;
                 });
                 return formattedLines.join("\n");
             }
