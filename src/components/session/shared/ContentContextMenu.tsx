@@ -13,9 +13,9 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger,
     ContextMenuTrigger,
-} from "~/components/ui/context-menu";
-import { useToast } from "~/hooks/use-toast";
-import { decodeBase64, urlDecode, htmlDecode, jsonFormat, jsonMinify } from "~/lib/burpParser";
+} from "@/components/ui/context-menu";
+import { useToast } from "@/hooks/use-toast";
+import { decodeBase64, urlDecode, htmlDecode, jsonFormat, jsonMinify } from "@/lib/burpParser";
 
 interface ContentContextMenuProps {
     children: React.ReactNode;

@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { Upload } from "lucide-react";
 
-import { useToast } from "~/hooks/use-toast";
-import { parseBurpXml } from "~/lib/burpParser";
-import { BurpSession } from "~/types/burp";
+import { useToast } from "@/hooks/use-toast";
+import { parseBurpXml } from "@/lib/burpParser";
+import { BurpSession } from "@/types/burp";
 
 interface FileUploadProps {
     onSessionLoaded: (session: BurpSession) => void;

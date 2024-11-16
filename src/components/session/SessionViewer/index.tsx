@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { useSelectedItem } from "~/hooks/session/useSelectedItem";
-import { useSessionPagination } from "~/hooks/session/useSessionPagination";
-import { useSessionSearch } from "~/hooks/session/useSessionSearch";
-import type { SessionViewerProps } from "~/types/session";
+import { useSelectedItem } from "@/hooks/session/useSelectedItem";
+import { useSessionPagination } from "@/hooks/session/useSessionPagination";
+import { useSessionSearch } from "@/hooks/session/useSessionSearch";
+import type { SessionViewerProps } from "@/types/session";
 
 import { Pagination } from "../shared/Pagination";
 import { SearchBar } from "../shared/SearchBar";

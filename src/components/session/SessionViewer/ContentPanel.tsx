@@ -4,12 +4,12 @@ import { useEffect, useState, useRef } from "react";
 
 import { Indent, WrapText } from "lucide-react";
 
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Toggle } from "~/components/ui/toggle";
-import { useMessageFormatter } from "~/hooks/session/useMessageFormatter";
-import { useToast } from "~/hooks/use-toast";
-import { decodeBase64 } from "~/lib/burpParser";
-import type { ContentPanelProps } from "~/types/session";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toggle } from "@/components/ui/toggle";
+import { useMessageFormatter } from "@/hooks/session/useMessageFormatter";
+import { useToast } from "@/hooks/use-toast";
+import { decodeBase64 } from "@/lib/burpParser";
+import type { ContentPanelProps } from "@/types/session";
 
 import { ContentContextMenu } from "../shared/ContentContextMenu";
 import { HttpMessageRenderer } from "../shared/HttpMessageRenderer";

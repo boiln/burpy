@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { FileUpload } from "~/components/FileUpload";
-import { SessionViewer } from "~/components/session/SessionViewer";
-import { Toaster } from "~/components/ui/toaster";
-import { BurpSession } from "~/types/burp";
+import { FileUpload } from "@/components/FileUpload";
+import { SessionViewer } from "@/components/session/SessionViewer";
+import { Toaster } from "@/components/ui/toaster";
+import { BurpSession } from "@/types/burp";
 
 export default function Home() {
     const [session, setSession] = useState<BurpSession | null>(null);

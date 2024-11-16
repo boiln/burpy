@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 
-import type { BurpItem } from "~/types/burp";
+import type { BurpItem } from "@/types/burp";
 
 const ITEMS_PER_PAGE = 1000;
 

@@ -1,11 +1,11 @@
 import { JetBrains_Mono } from "next/font/google";
 
-import { ThemeProvider } from "~/components/ThemeProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 import type { Metadata } from "next";
 
-import "~/app/globals.css";
-import "~/app/prism.css";
+import "@/app/globals.css";
+import "@/app/prism.css";
 
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],

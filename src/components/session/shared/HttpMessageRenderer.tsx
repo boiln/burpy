@@ -1,6 +1,6 @@
 "use client";
 
-import { useMessageFormatter } from "~/hooks/session/useMessageFormatter";
+import { useMessageFormatter } from "@/hooks/session/useMessageFormatter";
 
 import { SyntaxHighlighter } from "./SyntaxHighlighter";
 

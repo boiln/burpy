@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "~/components/ui/input";
-import type { SearchBarProps } from "~/types/session";
+import { Input } from "@/components/ui/input";
+import type { SearchBarProps } from "@/types/session";
 
 export function SearchBar({ value, onChange }: SearchBarProps) {
     return (

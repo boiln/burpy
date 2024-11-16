@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 
-import { useDebounce } from "~/hooks/useDebounce";
-import type { BurpSession, BurpItem } from "~/types/burp";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { BurpSession, BurpItem } from "@/types/burp";
 
 export function useSessionSearch(session: BurpSession) {
     const [searchTerm, setSearchTerm] = useState("");

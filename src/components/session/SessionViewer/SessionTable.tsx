@@ -11,8 +11,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "~/components/ui/table";
-import type { SessionTableProps } from "~/types/session";
+} from "@/components/ui/table";
+import type { SessionTableProps } from "@/types/session";
 
 export function SessionTable({ items, selectedItem, onSelectItem }: SessionTableProps) {
     const parentRef = useRef<HTMLDivElement>(null);

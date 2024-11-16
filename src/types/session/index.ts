@@ -1,4 +1,4 @@
-import { BurpSession, BurpItem } from "~/types/burp";
+import { BurpSession, BurpItem } from "@/types/burp";
 
 export interface SessionViewerProps {
     session: BurpSession;

@@ -20,7 +20,7 @@ export function SyntaxHighlighter({ language, content, wrap, type }: SyntaxHighl
 
     useEffect(() => {
         const highlightCode = async () => {
-            const Prism = (await import("~/lib/prism")).default;
+            const Prism = (await import("@/lib/prism")).default;
             const highlighted = Prism.highlight(content, Prism.languages[language], language);
             setHighlightedCode(highlighted);
         };
