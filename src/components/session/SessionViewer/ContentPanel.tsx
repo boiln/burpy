@@ -81,12 +81,14 @@ export function ContentPanel({
                 await copyTextToClipboard(decodedContent);
                 toast({
                     description: "Copied raw content to clipboard",
+                    duration: 2000,
                 });
             } catch (err) {
                 console.error("Failed to copy raw content:", err);
                 toast({
                     description: "Failed to copy to clipboard",
                     variant: "destructive",
+                    duration: 2000,
                 });
             }
         },
@@ -101,12 +103,14 @@ export function ContentPanel({
                 await copyTextToClipboard(justHeaders);
                 toast({
                     description: "Copied headers to clipboard",
+                    duration: 2000,
                 });
             } catch (err) {
                 console.error("Failed to copy headers:", err);
                 toast({
                     description: "Failed to copy to clipboard",
                     variant: "destructive",
+                    duration: 2000,
                 });
             }
         },
@@ -123,12 +127,14 @@ export function ContentPanel({
                 await copyTextToClipboard(cookieLines);
                 toast({
                     description: "Copied cookies to clipboard",
+                    duration: 2000,
                 });
             } catch (err) {
                 console.error("Failed to copy cookies:", err);
                 toast({
                     description: "Failed to copy to clipboard",
                     variant: "destructive",
+                    duration: 2000,
                 });
             }
         },
@@ -141,12 +147,14 @@ export function ContentPanel({
                 await copyTextToClipboard(body);
                 toast({
                     description: "Copied payload to clipboard",
+                    duration: 2000,
                 });
             } catch (err) {
                 console.error("Failed to copy payload:", err);
                 toast({
                     description: "Failed to copy to clipboard",
                     variant: "destructive",
+                    duration: 2000,
                 });
             }
         },
