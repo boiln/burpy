@@ -27,17 +27,12 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
             onSessionLoaded(session);
             toast({
                 description: `Loaded ${session.items.length} items from Burp session`,
-                duration: 3500,
-                className:
-                    "w-[380px] fixed top-4 right-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
             });
         } catch (error) {
             console.error("Error parsing Burp session:", error);
             toast({
                 description: "Failed to parse Burp session file",
                 variant: "destructive",
-                duration: 3500,
-                className: "w-[380px] fixed top-4 right-4",
             });
         } finally {
             setLoading(false);

@@ -47,24 +47,18 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
         return selection?.toString() || "";
     };
 
-    const showToast = (title: string, success: boolean = true) => {
-        toast({
-            title,
-            duration: 2000,
-            className: success
-                ? "w-[380px] fixed top-4 right-4 bg-background border-border"
-                : "w-[380px] fixed top-4 right-4 bg-destructive/10 dark:bg-destructive/20 border-destructive/50",
-        });
-    };
-
     const handleCopySelection = async () => {
         try {
             const selectedText = getSelectedText();
             await navigator.clipboard.writeText(selectedText);
-            showToast("Copied to clipboard");
+            toast({
+                description: "Copied to clipboard",
+            });
         } catch (err) {
             console.error("Failed to copy selection:", err);
-            showToast("Failed to copy", false);
+            toast({
+                description: "Failed to copy",
+            });
         }
     };
 
@@ -73,45 +67,65 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
             try {
                 const decoded = urlDecode(getSelectedText());
                 await navigator.clipboard.writeText(decoded);
-                showToast("URL decoded and copied");
+                toast({
+                    description: "URL decoded and copied",
+                });
             } catch (err) {
-                showToast("Failed to decode URL", false);
+                toast({
+                    description: "Failed to decode URL",
+                });
             }
         },
         base64: async () => {
             try {
                 const decoded = decodeBase64(getSelectedText());
                 await navigator.clipboard.writeText(decoded);
-                showToast("Base64 decoded and copied");
+                toast({
+                    description: "Base64 decoded and copied",
+                });
             } catch (err) {
-                showToast("Failed to decode Base64", false);
+                toast({
+                    description: "Failed to decode Base64",
+                });
             }
         },
         html: async () => {
             try {
                 const decoded = htmlDecode(getSelectedText());
                 await navigator.clipboard.writeText(decoded);
-                showToast("HTML decoded and copied");
+                toast({
+                    description: "HTML decoded and copied",
+                });
             } catch (err) {
-                showToast("Failed to decode HTML", false);
+                toast({
+                    description: "Failed to decode HTML",
+                });
             }
         },
         jsonFormat: async () => {
             try {
                 const formatted = jsonFormat(getSelectedText());
                 await navigator.clipboard.writeText(formatted);
-                showToast("JSON formatted and copied");
+                toast({
+                    description: "JSON formatted and copied",
+                });
             } catch (err) {
-                showToast("Failed to format JSON", false);
+                toast({
+                    description: "Failed to format JSON",
+                });
             }
         },
         jsonMinify: async () => {
             try {
                 const minified = jsonMinify(getSelectedText());
                 await navigator.clipboard.writeText(minified);
-                showToast("JSON minified and copied");
+                toast({
+                    description: "JSON minified and copied",
+                });
             } catch (err) {
-                showToast("Failed to minify JSON", false);
+                toast({
+                    description: "Failed to minify JSON",
+                });
             }
         },
     };
