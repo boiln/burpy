@@ -1,6 +1,9 @@
-# Burpy - Burp Suite Session Viewer
+# Burpy - Burp Suite HTTP session viewer
 
-A modern, fast, and user-friendly web application for viewing Burp Suite Community Edition saved session files. Built with Next.js, TypeScript, and Shadcn UI.
+A modern, fast, and user-friendly web application for viewing Burp Suite Community Edition saved session files.
+
+Burpy (11.16.24)
+![burpy_v1](https://github.com/user-attachments/assets/325ff36e-1125-4186-8f94-7bb9e244c4c2)
 
 ## Features
 
@@ -18,8 +21,6 @@ A modern, fast, and user-friendly web application for viewing Burp Suite Communi
 -   Tailwind CSS
 -   Shadcn UI
 -   Radix UI
--   Prism.js for syntax highlighting
--   Framer Motion for animations
 
 ## Getting Started
 
@@ -61,8 +62,3 @@ Build and run using Docker Compose:
 ```bash
 docker compose up -d
 ```
-
-# Media
-
-Burpy V1 (11.9.24)
-![burpy_v1](https://github.com/user-attachments/assets/704e13df-b14c-4a86-93e7-22a336056368)
