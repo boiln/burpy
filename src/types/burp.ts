@@ -13,6 +13,7 @@ export interface BurpItem {
     request: {
         base64: boolean;
         value: string;
+        decodedValue: string;
     };
     status: string;
     responselength: string;
@@ -20,6 +21,7 @@ export interface BurpItem {
     response: {
         base64: boolean;
         value: string;
+        decodedValue: string;
     };
     comment: string;
 }

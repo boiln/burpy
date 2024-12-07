@@ -22,8 +22,11 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
 
         setLoading(true);
         try {
+            console.log("Reading file...");
             const text = await file.text();
+            console.log("Parsing XML...");
             const session = await parseBurpXml(text);
+            console.log("Session loaded:", session.items.length, "items");
             onSessionLoaded(session);
             toast({
                 description: `Loaded ${session.items.length} items from Burp session`,

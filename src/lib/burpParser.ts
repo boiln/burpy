@@ -71,10 +71,13 @@ export function jsonMinify(str: string): string {
 }
 
 export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
+    console.log("Starting XML parsing");
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+    console.log("XML parsed");
 
     const items = xmlDoc.getElementsByTagName("item");
+    console.log("Found items:", items.length);
     const parsedItems: BurpItem[] = [];
 
     for (let i = 0; i < items.length; i++) {
@@ -85,6 +88,16 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
         const host = item.getElementsByTagName("host")[0];
         const request = item.getElementsByTagName("request")[0];
         const response = item.getElementsByTagName("response")[0];
+
+        // Pre-decode base64 content for searching
+        const requestValue = getElementText("request");
+        const responseValue = getElementText("response");
+        const isRequestBase64 = request?.getAttribute("base64") === "true";
+        const isResponseBase64 = response?.getAttribute("base64") === "true";
+
+        // Create searchable content by decoding base64 if needed
+        const decodedRequest = isRequestBase64 ? decodeBase64(requestValue) : requestValue;
+        const decodedResponse = isResponseBase64 ? decodeBase64(responseValue) : responseValue;
 
         parsedItems.push({
             time: getElementText("time"),
@@ -99,23 +112,26 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
             path: getElementText("path"),
             extension: getElementText("extension"),
             request: {
-                base64: request?.getAttribute("base64") === "true",
-                value: getElementText("request"),
+                base64: isRequestBase64,
+                value: requestValue,
+                decodedValue: decodedRequest,
             },
             status: getElementText("status"),
             responselength: getElementText("responselength"),
             mimetype: getElementText("mimetype"),
             response: {
-                base64: response?.getAttribute("base64") === "true",
-                value: getElementText("response"),
+                base64: isResponseBase64,
+                value: responseValue,
+                decodedValue: decodedResponse,
             },
             comment: getElementText("comment"),
         });
     }
 
+    console.log("Finished parsing items:", parsedItems.length);
     return {
-        burpVersion: xmlDoc.documentElement.getAttribute("burpVersion") || "",
-        exportTime: xmlDoc.documentElement.getAttribute("exportTime") || "",
+        burpVersion: "2.0",
+        exportTime: new Date().toISOString(),
         items: parsedItems,
     };
 }
