@@ -32,9 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </head>
             <body className={`${jetbrainsMono.variable} antialiased`}>
                 <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-                    <TooltipProvider>
-                        {children}
-                    </TooltipProvider>
+                    <TooltipProvider>{children}</TooltipProvider>
                 </ThemeProvider>
             </body>
         </html>
