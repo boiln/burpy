@@ -1,3 +1,5 @@
+"use client";
+
 import {
     ContextMenu,
     ContextMenuContent,
@@ -46,6 +48,13 @@ export function TableContextMenu({
         setShowCommentDialog(false);
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleCommentSubmit();
+        }
+    };
+
     return (
         <>
             <ContextMenu>
@@ -85,6 +94,8 @@ export function TableContextMenu({
                             placeholder="Enter comment..."
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            autoFocus
                         />
                         <div className="flex justify-end gap-2">
                             <Button variant="outline" onClick={() => setShowCommentDialog(false)}>

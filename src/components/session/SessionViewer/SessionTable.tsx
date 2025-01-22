@@ -12,6 +12,8 @@ import type { SessionTableProps } from "@/types/session";
 import { TableContextMenu } from "./TableContextMenu";
 import { BurpItem, HighlightColor } from "@/types/burp";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MessageCircle } from "lucide-react";
 
 export function SessionTable({
     items,
@@ -63,6 +65,24 @@ export function SessionTable({
         }
     };
 
+    const CommentIndicator = ({ comment }: { comment: string }) => {
+        if (!comment.trim()) return null;
+
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="inline-flex items-center gap-1 rounded bg-muted/50 px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted">
+                        <MessageCircle className="h-3 w-3" />
+                        <span className="max-w-[150px] truncate">{comment}</span>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-md whitespace-pre-wrap">{comment}</p>
+                </TooltipContent>
+            </Tooltip>
+        );
+    };
+
     return (
         <div className="rounded-md border">
             <div className="overflow-auto" style={{ height: "40vh" }}>
@@ -105,12 +125,10 @@ export function SessionTable({
                                             {item.method}
                                         </TableCell>
                                         <TableCell className="max-w-[500px] truncate">
-                                            {item.url}
-                                            {item.comment && (
-                                                <span className="ml-2 text-muted-foreground">
-                                                    💭
-                                                </span>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                <span className="truncate">{item.url}</span>
+                                                <CommentIndicator comment={item.comment} />
+                                            </div>
                                         </TableCell>
                                         <TableCell className="w-24">{item.status}</TableCell>
                                         <TableCell className="w-24">
