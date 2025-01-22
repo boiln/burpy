@@ -6,6 +6,7 @@ import { Upload } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import { parseBurpXml } from "@/lib/burpParser";
+import { parseHarToSession } from "@/lib/harParser";
 import { BurpSession } from "@/types/burp";
 
 interface FileUploadProps {
@@ -24,17 +25,26 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
         try {
             console.log("Reading file...");
             const text = await file.text();
-            console.log("Parsing XML...");
-            const session = await parseBurpXml(text);
+            
+            let session: BurpSession;
+            
+            if (file.name.toLowerCase().endsWith('.har')) {
+                console.log("Parsing HAR...");
+                session = parseHarToSession(text);
+            } else {
+                console.log("Parsing XML...");
+                session = await parseBurpXml(text);
+            }
+
             console.log("Session loaded:", session.items.length, "items");
             onSessionLoaded(session);
             toast({
-                description: `Loaded ${session.items.length} items from Burp session`,
+                description: `Loaded ${session.items.length} items from ${file.name.toLowerCase().endsWith('.har') ? 'HAR' : 'Burp'} session`,
             });
         } catch (error) {
-            console.error("Error parsing Burp session:", error);
+            console.error("Error parsing session file:", error);
             toast({
-                description: "Failed to parse Burp session file",
+                description: "Failed to parse session file",
                 variant: "destructive",
             });
         } finally {
@@ -69,14 +79,14 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
                                 Processing...
                             </span>
                         ) : (
-                            "Click to upload Burp session file"
+                            "Click to upload Burp (.xml) or HAR (.har) file"
                         )}
                     </p>
                 </div>
                 <input
                     type="file"
                     className="hidden"
-                    accept=".xml"
+                    accept=".xml,.har"
                     onChange={handleFileUpload}
                     disabled={loading}
                 />
