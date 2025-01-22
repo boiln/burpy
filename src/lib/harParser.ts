@@ -1,5 +1,6 @@
 import { BurpSession, BurpItem } from "@/types/burp";
 import { HarFile, HarEntry } from "@/types/har";
+import { decodeBase64 } from "./burpParser";
 
 function convertHarHeadersToString(headers: { name: string; value: string }[]): string {
     return headers.map((header) => `${header.name}: ${header.value}`).join("\n");
@@ -14,7 +15,7 @@ function buildHttpMessage(entry: HarEntry, type: "request" | "response"): string
         return `${firstLine}\n${headerString}${body ? "\n\n" + body : ""}`;
     } else {
         const { status, statusText, httpVersion, headers, content } = entry.response;
-        const firstLine = `${httpVersion} ${status} ${statusText}`;
+        const firstLine = `${httpVersion} ${statusText}`;
         const headerString = convertHarHeadersToString(headers);
         const body = content.text || "";
         return `${firstLine}\n${headerString}${body ? "\n\n" + body : ""}`;
@@ -30,38 +31,15 @@ export function parseHarToSession(harContent: string): BurpSession {
             const responseMessage = buildHttpMessage(entry, "response");
             const url = new URL(entry.request.url);
 
-            // Extract IP from various possible locations
-            let ip = "";
-            if (entry.serverIPAddress) {
-                ip = entry.serverIPAddress;
-            } else {
-                // Try to find IP in response headers
-                const serverHeader = entry.response.headers.find(
-                    (h) =>
-                        h.name.toLowerCase() === "server" ||
-                        h.name.toLowerCase() === "x-served-by" ||
-                        h.name.toLowerCase() === "x-real-ip"
-                );
-                if (serverHeader) {
-                    // Extract IP if it exists in the server header
-                    const ipMatch = serverHeader.value.match(
-                        /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/
-                    );
-                    if (ipMatch) {
-                        ip = ipMatch[0];
-                    }
-                }
-            }
-
             return {
                 time: new Date(entry.startedDateTime).toLocaleString(),
                 url: entry.request.url,
                 host: {
                     value: url.hostname,
-                    ip: ip,
-                    port: url.port || (url.protocol === "https:" ? "443" : "80"),
+                    ip: entry.serverIPAddress || "",
+                    port: url.port.toString(),
                 },
-                port: url.port || (url.protocol === "https:" ? "443" : "80"),
+                port: url.port.toString(),
                 protocol: url.protocol.replace(":", ""),
                 method: entry.request.method,
                 path: url.pathname + url.search,
