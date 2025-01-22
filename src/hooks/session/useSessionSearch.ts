@@ -1,31 +1,40 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { BurpItem, BurpSession } from "@/types/burp";
+import { BurpItem } from "@/types/burp";
+import { FilterType } from "@/types/session";
 
 export function useSessionSearch(items: BurpItem[]) {
     const [searchTerm, setSearchTerm] = useState("");
+    const [filter, setFilter] = useState<FilterType>("all");
     const [filteredItems, setFilteredItems] = useState<BurpItem[]>(items);
     const debouncedSearch = useDebounce(searchTerm, 300);
 
     useEffect(() => {
-        if (!debouncedSearch.trim()) {
-            setFilteredItems(items);
-            return;
+        // First apply the filter
+        let filtered = items;
+
+        if (filter === "highlighted") {
+            filtered = items.filter((item) => item.highlight !== null);
+        } else if (filter === "commented") {
+            filtered = items.filter((item) => item.comment.trim() !== "");
         }
 
-        const searchLower = debouncedSearch.toLowerCase();
-        const filtered = items.filter((item) => {
-            return (
-                item.url.toLowerCase().includes(searchLower) ||
-                item.method.toLowerCase().includes(searchLower) ||
-                item.status.toLowerCase().includes(searchLower) ||
-                item.mimetype.toLowerCase().includes(searchLower) ||
-                item.comment.toLowerCase().includes(searchLower)
-            );
-        });
+        // Then apply the search
+        if (debouncedSearch.trim()) {
+            const searchLower = debouncedSearch.toLowerCase();
+            filtered = filtered.filter((item) => {
+                return (
+                    item.url.toLowerCase().includes(searchLower) ||
+                    item.method.toLowerCase().includes(searchLower) ||
+                    item.status.toLowerCase().includes(searchLower) ||
+                    item.mimetype.toLowerCase().includes(searchLower) ||
+                    item.comment.toLowerCase().includes(searchLower)
+                );
+            });
+        }
 
         setFilteredItems(filtered);
-    }, [debouncedSearch, items]);
+    }, [debouncedSearch, items, filter]);
 
-    return { filteredItems, searchTerm, setSearchTerm };
+    return { filteredItems, searchTerm, setSearchTerm, filter, setFilter };
 }

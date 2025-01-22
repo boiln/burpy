@@ -28,7 +28,17 @@ export interface PaginationProps {
     onPageChange: (page: number) => void;
 }
 
+export type FilterType = "all" | "highlighted" | "commented";
+
+export interface FilterOption {
+    value: FilterType;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+}
+
 export interface SearchBarProps {
     value: string;
     onChange: (value: string) => void;
+    filter: FilterType;
+    onFilterChange: (filter: FilterType) => void;
 }

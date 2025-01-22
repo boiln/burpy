@@ -2,7 +2,7 @@
     "name": "burpy",
     "version": "0.1.0",
     "private": true,
-    "homepage": "https://Boiln.github.io/burpy",
+    "homepage": "https://boiln.github.io/burpy",
     "scripts": {
         "dev": "next dev -p 3069",
         "build": "next build",

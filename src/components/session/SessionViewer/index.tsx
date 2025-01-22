@@ -16,7 +16,7 @@ import { BurpItem } from "@/types/burp";
 
 export function SessionViewer({ session }: SessionViewerProps) {
     const [items, setItems] = useState<BurpItem[]>(session.items);
-    const { filteredItems, searchTerm, setSearchTerm } = useSessionSearch(items);
+    const { filteredItems, searchTerm, setSearchTerm, filter, setFilter } = useSessionSearch(items);
     const { selectedItem, setSelectedItem } = useSelectedItem();
 
     const [requestFormat, setRequestFormat] = useState({
@@ -43,7 +43,17 @@ export function SessionViewer({ session }: SessionViewerProps) {
                 <ResizablePanelGroup direction="vertical" className="h-full rounded-lg border">
                     <ResizablePanel defaultSize={40} minSize={20} maxSize={80}>
                         <div className="h-full space-y-4 p-4">
-                            <SearchBar value={searchTerm} onChange={setSearchTerm} />
+                            <SearchBar
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                                filter={filter}
+                                onFilterChange={setFilter}
+                            />
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    {filteredItems.length} requests
+                                </p>
+                            </div>
                             <SessionTable
                                 items={filteredItems}
                                 selectedItem={selectedItem}
