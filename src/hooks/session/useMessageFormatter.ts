@@ -44,22 +44,26 @@ export function useMessageFormatter() {
         }
     };
 
-    const formatNextJsLine = (line: string): string => {
+    const formatHttpRequestLine = (firstLine: string): { requestLine: string; host?: string } => {
         try {
-            // Match the pattern "number:JSON" and extract just the JSON part
-            const match = line.match(/^(\d+):(.+)$/);
+            // Match HTTP method and full URL
+            const match = firstLine.match(
+                /^(\w+)\s+(https?:\/\/[^/]+)(\/[^\s]*)\s+(HTTP\/[\d.]+)$/i
+            );
             if (match) {
-                const [_, number, jsonContent] = match;
-                const parsed = JSON.parse(jsonContent);
-                // Format with 4 spaces indentation
-                const formatted = JSON.stringify(parsed, null, 4);
-                // Preserve the line number prefix
-                return `${number}:${formatted}`;
+                const [_, method, hostPart, path, httpVersion] = match;
+                // Extract host without protocol and port
+                const host = hostPart.replace(/^https?:\/\//i, "");
+                // Return formatted request line and host
+                return {
+                    requestLine: `${method} ${path} ${httpVersion}`,
+                    host,
+                };
             }
-            return line;
         } catch (e) {
-            return line;
+            console.error("Failed to parse HTTP request line:", e);
         }
+        return { requestLine: firstLine };
     };
 
     const formatContent = (content: string, language: string): string => {
@@ -104,8 +108,25 @@ export function useMessageFormatter() {
         const { wrap, prettify } = options;
 
         const parts = content.split(/\r?\n\r?\n/);
-        const headers = parts[0];
+        let headers = parts[0];
         const rawBody = parts.slice(1).join("\n\n").trim();
+
+        // Format the request line and extract host if it's a request
+        const headerLines = headers.split(/\r?\n/);
+        const { requestLine, host } = formatHttpRequestLine(headerLines[0]);
+
+        // Reconstruct headers with the formatted request line and host header
+        if (host) {
+            const existingHeaders = headerLines.slice(1);
+            // Remove any existing Host header
+            const filteredHeaders = existingHeaders.filter(
+                (line) => !line.toLowerCase().startsWith("host:")
+            );
+            // Add the new Host header right after the request line
+            headers = [requestLine, `Host: ${host}`, ...filteredHeaders].join("\n");
+        } else {
+            headers = [requestLine, ...headerLines.slice(1)].join("\n");
+        }
 
         let processedBody = rawBody;
         const language = getLanguageFromContentType(headers);
