@@ -181,7 +181,7 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
                     <ContextMenuSubContent className="w-48">
                         <ContextMenuItem onClick={onCopy.raw}>
                             <Code className="mr-2 h-4 w-4" />
-                            Raw Content
+                            Raw
                         </ContextMenuItem>
                         <ContextMenuItem onClick={onCopy.headers}>
                             <FileInput className="mr-2 h-4 w-4" />

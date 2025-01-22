@@ -14,7 +14,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { BurpItem, HighlightColor } from "@/types/burp";
+import {
+    Copy,
+    MessageCircle,
+    Paintbrush2,
+    Link,
+    Hash,
+    FileCode,
+    Globe,
+    Clock,
+    FileJson,
+    FileText,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { BurpItem, HighlightColor } from "@/types/burp";
 
 interface TableContextMenuProps {
     children: React.ReactNode;
@@ -42,17 +55,25 @@ export function TableContextMenu({
 }: TableContextMenuProps) {
     const [showCommentDialog, setShowCommentDialog] = useState(false);
     const [comment, setComment] = useState(item.comment);
+    const { toast } = useToast();
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            handleCommentSubmit();
+        }
+    };
 
     const handleCommentSubmit = () => {
         onUpdateComment(comment);
         setShowCommentDialog(false);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleCommentSubmit();
-        }
+    const copyToClipboard = (text: string, description: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            description: `Copied ${description} to clipboard`,
+            duration: 2000,
+        });
     };
 
     return (
@@ -60,26 +81,78 @@ export function TableContextMenu({
             <ContextMenu>
                 <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
                 <ContextMenuContent className="w-64">
+                    {/* Copy Options */}
                     <ContextMenuSub>
-                        <ContextMenuSubTrigger>Highlight</ContextMenuSubTrigger>
+                        <ContextMenuSubTrigger>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copy
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent className="w-48">
+                            <ContextMenuItem onClick={() => copyToClipboard(item.method, "Method")}>
+                                <FileCode className="mr-2 h-4 w-4" />
+                                Copy Method
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => copyToClipboard(item.url, "URL")}>
+                                <Link className="mr-2 h-4 w-4" />
+                                Copy URL
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => copyToClipboard(item.status, "Status")}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Copy Status
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => copyToClipboard(item.responselength, "Length")}
+                            >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Copy Length
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => copyToClipboard(item.mimetype, "MIME Type")}
+                            >
+                                <FileJson className="mr-2 h-4 w-4" />
+                                Copy MIME Type
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => copyToClipboard(item.host.ip, "IP")}>
+                                <Globe className="mr-2 h-4 w-4" />
+                                Copy IP
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => copyToClipboard(item.time, "Time")}>
+                                <Clock className="mr-2 h-4 w-4" />
+                                Copy Time
+                            </ContextMenuItem>
+                        </ContextMenuSubContent>
+                    </ContextMenuSub>
+
+                    <ContextMenuSeparator />
+
+                    {/* Highlight Options */}
+                    <ContextMenuSub>
+                        <ContextMenuSubTrigger>
+                            <Paintbrush2 className="mr-2 h-4 w-4" />
+                            Highlight
+                        </ContextMenuSubTrigger>
                         <ContextMenuSubContent className="w-48">
                             {HIGHLIGHT_COLORS.map((color) => (
                                 <ContextMenuItem
                                     key={color.value}
-                                    className={color.class}
                                     onClick={() => onHighlight(color.value)}
                                 >
+                                    <div className={`mr-2 h-4 w-4 rounded-full ${color.class}`} />
                                     {color.label}
                                 </ContextMenuItem>
                             ))}
                             <ContextMenuSeparator />
                             <ContextMenuItem onClick={() => onHighlight(null)}>
-                                Remove Highlight
+                                <div className="mr-2 h-4 w-4 rounded-full border border-border" />
+                                None
                             </ContextMenuItem>
                         </ContextMenuSubContent>
                     </ContextMenuSub>
+
+                    {/* Comment Option */}
                     <ContextMenuItem onClick={() => setShowCommentDialog(true)}>
-                        Add/Edit Comment
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        {item.comment ? "Edit Comment" : "Add Comment"}
                     </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>

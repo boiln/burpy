@@ -1,6 +1,5 @@
 import { BurpSession, BurpItem } from "@/types/burp";
 import { HarFile, HarEntry } from "@/types/har";
-import { decodeBase64 } from "./burpParser";
 
 function convertHarHeadersToString(headers: { name: string; value: string }[]): string {
     return headers.map((header) => `${header.name}: ${header.value}`).join("\n");
