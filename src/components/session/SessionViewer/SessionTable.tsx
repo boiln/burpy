@@ -147,7 +147,7 @@ export function SessionTable({
                                 <TableHead className="w-[50px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("time")}
                                     >
                                         #
@@ -157,7 +157,7 @@ export function SessionTable({
                                 <TableHead className="w-[80px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("method")}
                                     >
                                         Method
@@ -167,7 +167,7 @@ export function SessionTable({
                                 <TableHead className="min-w-[400px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("url")}
                                     >
                                         URL
@@ -177,7 +177,7 @@ export function SessionTable({
                                 <TableHead className="w-[80px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("status")}
                                     >
                                         Status
@@ -187,7 +187,7 @@ export function SessionTable({
                                 <TableHead className="w-[80px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("responselength")}
                                     >
                                         Length
@@ -197,7 +197,7 @@ export function SessionTable({
                                 <TableHead className="w-[180px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("mimetype")}
                                     >
                                         MIME Type
@@ -207,7 +207,7 @@ export function SessionTable({
                                 <TableHead className="w-[120px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("host")}
                                     >
                                         IP
@@ -217,7 +217,7 @@ export function SessionTable({
                                 <TableHead className="w-[180px]">
                                     <Button
                                         variant="ghost"
-                                        className="-ml-4 h-8 px-4 font-medium"
+                                        className="-ml-2 h-6 px-2 text-xs font-medium"
                                         onClick={() => handleSort("time")}
                                     >
                                         Time
@@ -248,11 +248,11 @@ export function SessionTable({
                                         )}
                                         onClick={() => onSelectItem(item)}
                                     >
-                                        <TableCell className="w-[50px] text-muted-foreground">
+                                        <TableCell className="w-[50px] text-xs text-muted-foreground">
                                             {index + 1}
                                         </TableCell>
                                         <TableCell className="w-[80px]">
-                                            <span className="block truncate font-medium">
+                                            <span className="block truncate text-xs font-medium">
                                                 {item.method}
                                             </span>
                                         </TableCell>

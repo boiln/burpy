@@ -167,21 +167,22 @@ export function ContentPanel({
 
     return (
         <div className="flex h-full flex-col">
-            <div className="shrink-0 border-b p-4">
+            <div className="shrink-0 border-b p-2">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">
+                    <h3 className="text-xs font-semibold">
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                     </h3>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Toggle
                                     pressed={wrap}
                                     onPressedChange={setWrap}
-                                    size="sm"
+                                    size="xs"
+                                    className="h-6 w-6 p-0"
                                     aria-label="Toggle word wrap"
                                 >
-                                    <WrapText className="h-4 w-4" />
+                                    <WrapText className="h-3 w-3" />
                                 </Toggle>
                             </TooltipTrigger>
                             <TooltipContent>Wrap</TooltipContent>
@@ -192,10 +193,10 @@ export function ContentPanel({
                                     pressed={prettify}
                                     onPressedChange={setPrettify}
                                     size="sm"
+                                    className="h-6 w-6 p-0 font-mono"
                                     aria-label="Toggle code formatting"
-                                    className="font-mono"
                                 >
-                                    <Code2 className="h-4 w-4" />
+                                    <Code2 className="h-3 w-3" />
                                 </Toggle>
                             </TooltipTrigger>
                             <TooltipContent>Beautify</TooltipContent>

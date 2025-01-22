@@ -39,7 +39,7 @@ export function SessionViewer({ session }: SessionViewerProps) {
 
     return (
         <TooltipProvider>
-            <div className="flex h-screen flex-col">
+            <div className="compact-ui flex h-screen flex-col">
                 <div className="border-b p-4">
                     <SearchBar
                         value={searchTerm}

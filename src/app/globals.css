@@ -24,6 +24,7 @@
         --input: 214.3 31.8% 91.4%;
         --ring: 25 77% 56%;
         --radius: 0.5rem;
+        --font-size-compact: 11px;
     }
 
     .dark {
@@ -113,4 +114,48 @@
 
 html {
     scroll-behavior: smooth;
+}
+
+/* Add compact table styles */
+.table-compact {
+    font-size: var(--font-size-compact);
+    line-height: 1.4;
+}
+
+.table-compact td,
+.table-compact th {
+    padding: 2px 4px;
+}
+
+/* Add compact UI styles */
+.compact-ui {
+    --compact-padding: 0.5rem;
+    --compact-font-size: 11px;
+    --compact-line-height: 1.4;
+    --compact-icon-size: 12px;
+}
+
+.compact-ui .table-header {
+    height: 28px;
+}
+
+.compact-ui .table-cell {
+    padding: 2px 4px;
+    font-size: var(--compact-font-size);
+    line-height: var(--compact-line-height);
+}
+
+.compact-ui .control-panel {
+    padding: var(--compact-padding);
+}
+
+.compact-ui .icon-button {
+    height: 24px;
+    width: 24px;
+    padding: 0;
+}
+
+.compact-ui .icon-button svg {
+    height: var(--compact-icon-size);
+    width: var(--compact-icon-size);
 }

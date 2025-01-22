@@ -34,7 +34,8 @@ export function SyntaxHighlighter({ language, content, wrap, type }: SyntaxHighl
             className={`language-${language}`}
             style={{
                 background: "none",
-                fontSize: "13px",
+                fontSize: "11px",
+                lineHeight: "1.4",
                 whiteSpace: wrap ? "pre-wrap" : "pre",
                 wordBreak: wrap ? "break-word" : "normal",
                 overflowX: "auto",
