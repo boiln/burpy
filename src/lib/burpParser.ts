@@ -125,6 +125,7 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
                 decodedValue: decodedResponse,
             },
             comment: getElementText("comment"),
+            highlight: null,
         });
     }
 
