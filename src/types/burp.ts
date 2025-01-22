@@ -1,3 +1,14 @@
+export type HighlightColor =
+    | "red"
+    | "orange"
+    | "yellow"
+    | "green"
+    | "cyan"
+    | "blue"
+    | "purple"
+    | "pink"
+    | null;
+
 export interface BurpItem {
     time: string;
     url: string;
@@ -23,6 +34,7 @@ export interface BurpItem {
         value: string;
         decodedValue: string;
     };
+    highlight: HighlightColor;
     comment: string;
 }
 

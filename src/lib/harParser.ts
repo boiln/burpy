@@ -2,7 +2,7 @@ import { BurpSession, BurpItem } from "@/types/burp";
 import { HarFile, HarEntry } from "@/types/har";
 
 function convertHarHeadersToString(headers: { name: string; value: string }[]): string {
-    return headers.map(header => `${header.name}: ${header.value}`).join("\n");
+    return headers.map((header) => `${header.name}: ${header.value}`).join("\n");
 }
 
 function buildHttpMessage(entry: HarEntry, type: "request" | "response"): string {
@@ -24,7 +24,7 @@ function buildHttpMessage(entry: HarEntry, type: "request" | "response"): string
 export function parseHarToSession(harContent: string): BurpSession {
     try {
         const har: HarFile = JSON.parse(harContent);
-        
+
         const items: BurpItem[] = har.log.entries.map((entry) => {
             const requestMessage = buildHttpMessage(entry, "request");
             const responseMessage = buildHttpMessage(entry, "response");
@@ -55,6 +55,7 @@ export function parseHarToSession(harContent: string): BurpSession {
                     value: responseMessage,
                     decodedValue: responseMessage,
                 },
+                highlight: null,
                 comment: entry.comment || "",
             };
         });
@@ -68,4 +69,4 @@ export function parseHarToSession(harContent: string): BurpSession {
         console.error("Failed to parse HAR file:", error);
         throw new Error("Invalid HAR file format");
     }
-} 
+}

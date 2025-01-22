@@ -9,8 +9,60 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import type { SessionTableProps } from "@/types/session";
+import { TableContextMenu } from "./TableContextMenu";
+import { BurpItem, HighlightColor } from "@/types/burp";
+import { cn } from "@/lib/utils";
 
-export function SessionTable({ items, selectedItem, onSelectItem }: SessionTableProps) {
+export function SessionTable({
+    items,
+    selectedItem,
+    onSelectItem,
+    onUpdateItem,
+}: SessionTableProps) {
+    const handleHighlight = (item: BurpItem, color: HighlightColor) => {
+        const updatedItem = {
+            ...item,
+            highlight: color ?? null,
+        };
+        onUpdateItem(updatedItem);
+    };
+
+    const handleUpdateComment = (item: BurpItem, comment: string) => {
+        const updatedItem = {
+            ...item,
+            comment,
+        };
+        onUpdateItem(updatedItem);
+    };
+
+    const getHighlightClass = (color: HighlightColor): string => {
+        if (!color) return "";
+
+        const baseOpacity = "hover:bg-muted/50";
+        const highlightOpacity = "/20";
+
+        switch (color) {
+            case "red":
+                return `bg-red-500${highlightOpacity}`;
+            case "orange":
+                return `bg-orange-500${highlightOpacity}`;
+            case "yellow":
+                return `bg-yellow-500${highlightOpacity}`;
+            case "green":
+                return `bg-green-500${highlightOpacity}`;
+            case "cyan":
+                return `bg-cyan-500${highlightOpacity}`;
+            case "blue":
+                return `bg-blue-500${highlightOpacity}`;
+            case "purple":
+                return `bg-purple-500${highlightOpacity}`;
+            case "pink":
+                return `bg-pink-500${highlightOpacity}`;
+            default:
+                return "";
+        }
+    };
+
     return (
         <div className="rounded-md border">
             <div className="overflow-auto" style={{ height: "40vh" }}>
@@ -26,24 +78,49 @@ export function SessionTable({ items, selectedItem, onSelectItem }: SessionTable
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {items.map((item, index) => (
-                            <TableRow
-                                key={index}
-                                className={`hover:bg-muted/50 ${
-                                    selectedItem === item ? "bg-muted" : ""
-                                }`}
-                                onClick={() => onSelectItem(item)}
-                            >
-                                <TableCell className="w-14 text-muted-foreground">
-                                    {index + 1}
-                                </TableCell>
-                                <TableCell className="w-24 font-medium">{item.method}</TableCell>
-                                <TableCell className="max-w-[500px] truncate">{item.url}</TableCell>
-                                <TableCell className="w-24">{item.status}</TableCell>
-                                <TableCell className="w-24">{item.responselength}</TableCell>
-                                <TableCell className="w-32">{item.mimetype}</TableCell>
-                            </TableRow>
-                        ))}
+                        {items.map((item, index) => {
+                            const highlightClass = getHighlightClass(item.highlight);
+
+                            return (
+                                <TableContextMenu
+                                    key={`${item.url}-${item.time}-${index}`}
+                                    item={item}
+                                    onHighlight={(color) => handleHighlight(item, color)}
+                                    onUpdateComment={(comment) =>
+                                        handleUpdateComment(item, comment)
+                                    }
+                                >
+                                    <TableRow
+                                        className={cn(
+                                            "hover:bg-muted/50",
+                                            selectedItem === item && "bg-muted",
+                                            highlightClass
+                                        )}
+                                        onClick={() => onSelectItem(item)}
+                                    >
+                                        <TableCell className="w-14 text-muted-foreground">
+                                            {index + 1}
+                                        </TableCell>
+                                        <TableCell className="w-24 font-medium">
+                                            {item.method}
+                                        </TableCell>
+                                        <TableCell className="max-w-[500px] truncate">
+                                            {item.url}
+                                            {item.comment && (
+                                                <span className="ml-2 text-muted-foreground">
+                                                    💭
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="w-24">{item.status}</TableCell>
+                                        <TableCell className="w-24">
+                                            {item.responselength}
+                                        </TableCell>
+                                        <TableCell className="w-32">{item.mimetype}</TableCell>
+                                    </TableRow>
+                                </TableContextMenu>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </div>

@@ -8,6 +8,7 @@ export interface SessionTableProps {
     items: BurpItem[];
     selectedItem: BurpItem | null;
     onSelectItem: (item: BurpItem) => void;
+    onUpdateItem: (item: BurpItem) => void;
 }
 
 export interface ContentPanelProps {

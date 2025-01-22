@@ -7,16 +7,16 @@ import { useSessionPagination } from "@/hooks/session/useSessionPagination";
 import { useSessionSearch } from "@/hooks/session/useSessionSearch";
 import type { SessionViewerProps } from "@/types/session";
 
-import { Pagination } from "../shared/Pagination";
 import { SearchBar } from "../shared/SearchBar";
 
 import { ContentPanel } from "./ContentPanel";
 import { SessionTable } from "./SessionTable";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { BurpItem } from "@/types/burp";
 
 export function SessionViewer({ session }: SessionViewerProps) {
-    const { filteredItems, searchTerm, setSearchTerm } = useSessionSearch(session);
-    const { currentItems, pagination } = useSessionPagination(filteredItems);
+    const [items, setItems] = useState<BurpItem[]>(session.items);
+    const { filteredItems, searchTerm, setSearchTerm } = useSessionSearch(items);
     const { selectedItem, setSelectedItem } = useSelectedItem();
 
     const [requestFormat, setRequestFormat] = useState({
@@ -29,6 +29,14 @@ export function SessionViewer({ session }: SessionViewerProps) {
         prettify: true,
     });
 
+    const handleUpdateItem = (updatedItem: BurpItem) => {
+        setItems((prevItems) =>
+            prevItems.map((item) =>
+                item.url === updatedItem.url && item.time === updatedItem.time ? updatedItem : item
+            )
+        );
+    };
+
     return (
         <div className="flex h-screen flex-col px-4 md:px-6">
             <div className="flex h-full max-h-screen flex-col py-6">
@@ -37,9 +45,10 @@ export function SessionViewer({ session }: SessionViewerProps) {
                         <div className="h-full space-y-4 p-4">
                             <SearchBar value={searchTerm} onChange={setSearchTerm} />
                             <SessionTable
-                                items={currentItems}
+                                items={filteredItems}
                                 selectedItem={selectedItem}
                                 onSelectItem={setSelectedItem}
+                                onUpdateItem={handleUpdateItem}
                             />
                         </div>
                     </ResizablePanel>

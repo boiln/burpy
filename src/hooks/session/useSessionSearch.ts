@@ -1,57 +1,31 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import type { BurpSession, BurpItem } from "@/types/burp";
+import { BurpItem, BurpSession } from "@/types/burp";
 
-export function useSessionSearch(session: BurpSession) {
+export function useSessionSearch(items: BurpItem[]) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredItems, setFilteredItems] = useState<BurpItem[]>(session.items);
+    const [filteredItems, setFilteredItems] = useState<BurpItem[]>(items);
     const debouncedSearch = useDebounce(searchTerm, 300);
-    const workerRef = useRef<Worker | null>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
+        if (!debouncedSearch.trim()) {
+            setFilteredItems(items);
+            return;
+        }
 
-        console.log("Initializing search worker");
-        // Create worker from public directory
-        workerRef.current = new Worker("/workers/search.worker.js");
-
-        // Initialize the search index
-        console.log("Sending items to worker:", session.items.length);
-        workerRef.current.postMessage({
-            type: "initialize",
-            payload: session.items,
+        const searchLower = debouncedSearch.toLowerCase();
+        const filtered = items.filter((item) => {
+            return (
+                item.url.toLowerCase().includes(searchLower) ||
+                item.method.toLowerCase().includes(searchLower) ||
+                item.status.toLowerCase().includes(searchLower) ||
+                item.mimetype.toLowerCase().includes(searchLower) ||
+                item.comment.toLowerCase().includes(searchLower)
+            );
         });
 
-        // Handle worker messages
-        workerRef.current.onmessage = (e) => {
-            const { type, payload } = e.data;
-            console.log("Received message from worker:", type);
-            if (type === "searchResults") {
-                console.log("Setting filtered items:", payload.length);
-                setFilteredItems(payload);
-            }
-        };
-
-        // Handle worker errors
-        workerRef.current.onerror = (error) => {
-            console.error("Worker error:", error);
-        };
-
-        return () => {
-            console.log("Cleaning up worker");
-            workerRef.current?.terminate();
-        };
-    }, [session.items]);
-
-    useEffect(() => {
-        if (!workerRef.current) return;
-
-        console.log("Sending search request:", debouncedSearch);
-        workerRef.current.postMessage({
-            type: "search",
-            payload: debouncedSearch,
-        });
-    }, [debouncedSearch]);
+        setFilteredItems(filtered);
+    }, [debouncedSearch, items]);
 
     return { filteredItems, searchTerm, setSearchTerm };
 }
