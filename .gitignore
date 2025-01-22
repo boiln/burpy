@@ -1,4 +1,6 @@
-node_modules*
+node_modules/
 .env*
-.next*
-prompts*
+.next/
+prompts/
+.cursorrules
+.cursorignore
