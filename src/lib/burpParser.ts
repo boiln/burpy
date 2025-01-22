@@ -70,6 +70,18 @@ export function jsonMinify(str: string): string {
     }
 }
 
+// Add a helper function to format time consistently
+function formatTime(timeStr: string): string {
+    try {
+        // Parse the time string and format it consistently
+        const date = new Date(timeStr);
+        return date.toLocaleString();
+    } catch (e) {
+        console.error("Failed to format time:", e);
+        return timeStr;
+    }
+}
+
 export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
     console.log("Starting XML parsing");
     const parser = new DOMParser();
@@ -100,7 +112,7 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
         const decodedResponse = isResponseBase64 ? decodeBase64(responseValue) : responseValue;
 
         parsedItems.push({
-            time: getElementText("time"),
+            time: formatTime(getElementText("time")),
             url: getElementText("url"),
             host: {
                 value: host?.textContent || "",

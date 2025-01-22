@@ -50,24 +50,20 @@
     }
 
     ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 14px;
+        height: 14px;
+        background: transparent;
     }
 
     ::-webkit-scrollbar-track {
         background: transparent;
-        margin: 3px;
     }
 
     ::-webkit-scrollbar-thumb {
-        background-color: rgba(155, 155, 155, 0.5);
-        border-radius: 999px;
-        border: 2px solid transparent;
-        background-clip: content-box;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(155, 155, 155, 0.7);
+        @apply rounded-full bg-border/50 transition-colors hover:bg-border/80;
+        border: 4px solid transparent;
+        background-clip: padding-box;
+        min-height: 50px;
     }
 
     ::-webkit-scrollbar-corner {
@@ -75,8 +71,13 @@
     }
 
     * {
-        scrollbar-width: thin;
-        scrollbar-color: hsl(var(--muted-foreground)) transparent;
+        scrollbar-width: auto;
+        scrollbar-color: hsl(var(--border)) transparent;
+    }
+
+    /* Hide scrollbar when inactive but reserve space */
+    .hover\:pr-2:not(:hover)::-webkit-scrollbar-thumb {
+        background: transparent;
     }
 }
 

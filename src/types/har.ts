@@ -47,6 +47,7 @@ export interface HarEntry {
     response: HarResponse;
     cache: any;
     timings: any;
+    serverIPAddress?: string;
     connection?: string;
     comment?: string;
 }
@@ -62,4 +63,4 @@ export interface HarLog {
 
 export interface HarFile {
     log: HarLog;
-} 
+}

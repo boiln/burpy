@@ -39,72 +39,64 @@ export function SessionViewer({ session }: SessionViewerProps) {
 
     return (
         <TooltipProvider>
-            <div className="flex h-screen flex-col px-4 md:px-6">
-                <div className="flex h-full max-h-screen flex-col py-6">
-                    <ResizablePanelGroup direction="vertical" className="h-full rounded-lg border">
-                        <ResizablePanel defaultSize={40} minSize={20} maxSize={80}>
-                            <div className="h-full space-y-4 p-4">
-                                <SearchBar
-                                    value={searchTerm}
-                                    onChange={setSearchTerm}
-                                    filter={filter}
-                                    onFilterChange={setFilter}
-                                />
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm text-muted-foreground">
-                                        {filteredItems.length} requests
-                                    </p>
-                                </div>
-                                <SessionTable
-                                    items={filteredItems}
-                                    selectedItem={selectedItem}
-                                    onSelectItem={setSelectedItem}
-                                    onUpdateItem={handleUpdateItem}
-                                />
-                            </div>
-                        </ResizablePanel>
-                        <ResizableHandle />
-                        <ResizablePanel defaultSize={60}>
-                            <ResizablePanelGroup direction="horizontal" className="h-full">
-                                <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
-                                    <ContentPanel
-                                        item={selectedItem}
-                                        type="request"
-                                        wrap={requestFormat.wrap}
-                                        setWrap={(wrap) =>
-                                            setRequestFormat((prev) => ({ ...prev, wrap }))
-                                        }
-                                        prettify={requestFormat.prettify}
-                                        setPrettify={(prettify) => {
-                                            setRequestFormat((prev) => ({
-                                                ...prev,
-                                                prettify,
-                                            }));
-                                        }}
-                                    />
-                                </ResizablePanel>
-                                <ResizableHandle />
-                                <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
-                                    <ContentPanel
-                                        item={selectedItem}
-                                        type="response"
-                                        wrap={responseFormat.wrap}
-                                        setWrap={(wrap) =>
-                                            setResponseFormat((prev) => ({ ...prev, wrap }))
-                                        }
-                                        prettify={responseFormat.prettify}
-                                        setPrettify={(prettify) => {
-                                            setResponseFormat((prev) => ({
-                                                ...prev,
-                                                prettify,
-                                            }));
-                                        }}
-                                    />
-                                </ResizablePanel>
-                            </ResizablePanelGroup>
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
+            <div className="flex h-screen flex-col">
+                <div className="border-b p-4">
+                    <SearchBar
+                        value={searchTerm}
+                        onChange={setSearchTerm}
+                        filter={filter}
+                        onFilterChange={setFilter}
+                    />
+                    <div className="mt-2 text-sm text-muted-foreground">
+                        {filteredItems.length} requests
+                    </div>
                 </div>
+                <ResizablePanelGroup direction="vertical" className="flex-1">
+                    <ResizablePanel defaultSize={40} minSize={20}>
+                        <div className="h-full overflow-hidden">
+                            <SessionTable
+                                items={filteredItems}
+                                selectedItem={selectedItem}
+                                onSelectItem={setSelectedItem}
+                                onUpdateItem={handleUpdateItem}
+                            />
+                        </div>
+                    </ResizablePanel>
+                    <ResizableHandle />
+                    <ResizablePanel defaultSize={60}>
+                        <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel defaultSize={50}>
+                                <ContentPanel
+                                    item={selectedItem}
+                                    type="request"
+                                    wrap={requestFormat.wrap}
+                                    setWrap={(wrap) =>
+                                        setRequestFormat((prev) => ({ ...prev, wrap }))
+                                    }
+                                    prettify={requestFormat.prettify}
+                                    setPrettify={(prettify) =>
+                                        setRequestFormat((prev) => ({ ...prev, prettify }))
+                                    }
+                                />
+                            </ResizablePanel>
+                            <ResizableHandle />
+                            <ResizablePanel defaultSize={50}>
+                                <ContentPanel
+                                    item={selectedItem}
+                                    type="response"
+                                    wrap={responseFormat.wrap}
+                                    setWrap={(wrap) =>
+                                        setResponseFormat((prev) => ({ ...prev, wrap }))
+                                    }
+                                    prettify={responseFormat.prettify}
+                                    setPrettify={(prettify) =>
+                                        setResponseFormat((prev) => ({ ...prev, prettify }))
+                                    }
+                                />
+                            </ResizablePanel>
+                        </ResizablePanelGroup>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
             </div>
         </TooltipProvider>
     );
