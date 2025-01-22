@@ -1,4 +1,4 @@
-importScripts('https://cdn.jsdelivr.net/npm/fuse.js@7.0.0');
+import Fuse from 'fuse.js';
 
 let fuse;
 let items = [];
