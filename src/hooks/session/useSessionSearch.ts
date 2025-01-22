@@ -24,11 +24,20 @@ export function useSessionSearch(items: BurpItem[]) {
             const searchLower = debouncedSearch.toLowerCase();
             filtered = filtered.filter((item) => {
                 return (
+                    // Basic metadata
                     item.url.toLowerCase().includes(searchLower) ||
                     item.method.toLowerCase().includes(searchLower) ||
                     item.status.toLowerCase().includes(searchLower) ||
                     item.mimetype.toLowerCase().includes(searchLower) ||
-                    item.comment.toLowerCase().includes(searchLower)
+                    item.comment.toLowerCase().includes(searchLower) ||
+                    // Request content
+                    item.request.decodedValue.toLowerCase().includes(searchLower) ||
+                    // Response content
+                    item.response.decodedValue.toLowerCase().includes(searchLower) ||
+                    // Additional metadata
+                    item.time.toLowerCase().includes(searchLower) ||
+                    item.host.value.toLowerCase().includes(searchLower) ||
+                    item.path.toLowerCase().includes(searchLower)
                 );
             });
         }
