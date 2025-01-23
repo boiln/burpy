@@ -174,7 +174,9 @@ export function TableContextMenu({
                             <Button variant="outline" onClick={() => setShowCommentDialog(false)}>
                                 Cancel
                             </Button>
-                            <Button onClick={handleCommentSubmit}>Save</Button>
+                            <Button variant="secondary" onClick={handleCommentSubmit}>
+                                Save
+                            </Button>
                         </div>
                     </div>
                 </DialogContent>
