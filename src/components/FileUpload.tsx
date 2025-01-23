@@ -25,10 +25,10 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
         try {
             console.log("Reading file...");
             const text = await file.text();
-            
+
             let session: BurpSession;
-            
-            if (file.name.toLowerCase().endsWith('.har')) {
+
+            if (file.name.toLowerCase().endsWith(".har")) {
                 console.log("Parsing HAR...");
                 session = parseHarToSession(text);
             } else {
@@ -39,7 +39,7 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
             console.log("Session loaded:", session.items.length, "items");
             onSessionLoaded(session);
             toast({
-                description: `Loaded ${session.items.length} items from ${file.name.toLowerCase().endsWith('.har') ? 'HAR' : 'Burp'} session`,
+                description: `Loaded ${session.items.length} items from ${file.name.toLowerCase().endsWith(".har") ? "HAR" : "Burp"} session`,
             });
         } catch (error) {
             console.error("Error parsing session file:", error);
