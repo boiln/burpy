@@ -2,8 +2,8 @@
 
 A modern, fast, and user-friendly web application for viewing Burp Suite Community Edition saved session files.
 
-Burpy (11.16.24)
-![burpy_v1](https://github.com/user-attachments/assets/325ff36e-1125-4186-8f94-7bb9e244c4c2)
+Burpy (1.22.25)
+![burpy_v2](https://github.com/user-attachments/assets/f05f007c-0b5c-44bf-834d-2d82bf1ffb2f)
 
 ## Features
 
