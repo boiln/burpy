@@ -88,7 +88,6 @@ export function parseHarToSession(harContent: string): BurpSession {
                         host: {
                             value: formatHost(url),
                             ip: entry.serverIPAddress || "",
-                            port: url.port || (url.protocol === "https:" ? "443" : "80"),
                         },
                         port: url.port || (url.protocol === "https:" ? "443" : "80"),
                         protocol: url.protocol.replace(":", ""),
@@ -116,7 +115,7 @@ export function parseHarToSession(harContent: string): BurpSession {
                     return null;
                 }
             })
-            .filter((item): item is BurpItem => item !== null);
+            .filter((item): item is NonNullable<typeof item> => item !== null);
 
         if (items.length === 0) {
             throw new Error("No valid entries found in the HAR file");
