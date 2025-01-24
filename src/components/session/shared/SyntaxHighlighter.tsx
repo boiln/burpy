@@ -123,7 +123,7 @@ export function SyntaxHighlighter({
 
     const sharedStyles = {
         background: "none",
-        fontSize: "11px",
+        fontSize: "12px",
         lineHeight: "1.4",
         whiteSpace: wrap ? "pre-wrap" : "pre",
         wordBreak: wrap ? "break-word" : "normal",

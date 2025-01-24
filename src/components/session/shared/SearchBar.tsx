@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Paintbrush2, MessageCircle } from "lucide-react";
+import { Search, Paintbrush2, MessageCircle, ListFilter } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -15,7 +15,7 @@ const filterOptions: FilterOption[] = [
     {
         value: "all",
         label: "All Requests",
-        icon: Search,
+        icon: ListFilter,
     },
     {
         value: "highlighted",
@@ -31,18 +31,22 @@ const filterOptions: FilterOption[] = [
 
 export function SearchBar({ value, onChange, filter, onFilterChange }: SearchBarProps) {
     return (
-        <div className="flex gap-1">
-            <div className="relative flex-1">
-                <Search className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
+        <div className="flex w-full items-center gap-2 rounded-md border bg-background px-3 py-2">
+            <div className="flex flex-1 items-center gap-2">
+                <Search className="h-5 w-5 text-muted-foreground" />
                 <Input
-                    placeholder="Search"
+                    type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="h-7 pl-7 text-xs"
+                    placeholder="Search .."
+                    className="h-8 border-0 p-0 text-sm shadow-none focus:outline-none focus-visible:ring-0"
                 />
             </div>
             <Select value={filter} onValueChange={onFilterChange}>
-                <SelectTrigger className="h-7 w-[140px] text-xs">
+                <SelectTrigger
+                    className="h-8 w-[140px] border-0 bg-transparent text-sm hover:bg-transparent 
+                    focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

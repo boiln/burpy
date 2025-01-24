@@ -172,17 +172,17 @@ export function ContentPanel({
                     <h3 className="font-semibold">
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                     </h3>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Toggle
                                     pressed={wrap}
                                     onPressedChange={setWrap}
-                                    size="xs"
+                                    size="sm"
                                     className="h-6 w-6 p-0"
                                     aria-label="Toggle word wrap"
                                 >
-                                    <WrapText className="h-3 w-3" />
+                                    <WrapText className="h-4 w-4" />
                                 </Toggle>
                             </TooltipTrigger>
                             <TooltipContent>Wrap</TooltipContent>
@@ -193,10 +193,10 @@ export function ContentPanel({
                                     pressed={prettify}
                                     onPressedChange={setPrettify}
                                     size="sm"
-                                    className="h-6 w-6 p-0 font-mono"
+                                    className="h-6 w-6 p-0"
                                     aria-label="Toggle code formatting"
                                 >
-                                    <Code2 className="h-3 w-3" />
+                                    <Code2 className="h-4 w-4" />
                                 </Toggle>
                             </TooltipTrigger>
                             <TooltipContent>Beautify</TooltipContent>
