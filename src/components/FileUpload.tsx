@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
-import { Upload } from "lucide-react";
+import { Upload, PlayCircle } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import { parseBurpXml } from "@/lib/burpParser";
 import { parseHarToSession } from "@/lib/harParser";
 import { BurpSession } from "@/types/burp";
+import { Button } from "@/components/ui/button";
 
 interface FileUploadProps {
     onSessionLoaded: (session: BurpSession) => void;
@@ -17,43 +17,101 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
+    const loadDemoFile = async () => {
         setLoading(true);
         try {
-            console.log("Reading file...");
-            const text = await file.text();
+            const response = await fetch("/demo.har");
+            if (!response.ok) {
+                throw new Error("Failed to load demo file");
+            }
+            const text = await response.text();
+            const session = parseHarToSession(text);
 
-            let session: BurpSession;
-
-            if (file.name.toLowerCase().endsWith(".har")) {
-                console.log("Parsing HAR...");
-                session = parseHarToSession(text);
-            } else {
-                console.log("Parsing XML...");
-                session = await parseBurpXml(text);
+            if (!session.items || session.items.length === 0) {
+                throw new Error("No valid entries found in the demo file");
             }
 
-            console.log("Session loaded:", session.items.length, "items");
+            console.log("Demo session loaded:", session.items.length, "items");
             onSessionLoaded(session);
             toast({
-                description: `Loaded ${session.items.length} items from ${file.name.toLowerCase().endsWith(".har") ? "HAR" : "Burp"} session`,
+                description: `Loaded ${session.items.length} items from demo session`,
             });
-        } catch (error) {
-            console.error("Error parsing session file:", error);
+        } catch (error: unknown) {
+            const errorMessage =
+                error instanceof Error ? error.message : "Failed to load demo file";
             toast({
-                description: "Failed to parse session file",
+                title: "Error",
+                description: errorMessage,
                 variant: "destructive",
+                duration: 5000,
             });
         } finally {
             setLoading(false);
         }
     };
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setLoading(true);
+        try {
+            console.log(`Reading ${file.name}...`);
+
+            // Validate file size
+            if (file.size > 50 * 1024 * 1024) {
+                // 50MB limit
+                throw new Error("File size exceeds 50MB limit");
+            }
+
+            // Validate file extension
+            const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+            if (!["har", "xml"].includes(fileExtension)) {
+                throw new Error("Unsupported file format. Please upload a .har or .xml file");
+            }
+
+            const text = await file.text();
+            let session: BurpSession;
+
+            if (fileExtension === "har") {
+                console.log("Parsing HAR file...");
+                session = parseHarToSession(text);
+            } else {
+                console.log("Parsing Burp XML file...");
+                session = await parseBurpXml(text);
+            }
+
+            if (!session.items || session.items.length === 0) {
+                throw new Error("No valid entries found in the file");
+            }
+
+            console.log("Session loaded:", session.items.length, "items");
+            onSessionLoaded(session);
+            toast({
+                description: `Loaded ${session.items.length} items from ${fileExtension.toUpperCase()} session`,
+            });
+        } catch (error: unknown) {
+            console.error("Error parsing session file:", error);
+
+            // Provide specific error messages based on the error type
+            const errorMessage =
+                error instanceof Error ? error.message : "Failed to parse session file";
+
+            toast({
+                title: "Error",
+                description: errorMessage,
+                variant: "destructive",
+                duration: 5000,
+            });
+        } finally {
+            setLoading(false);
+            // Clear the file input
+            event.target.value = "";
+        }
+    };
+
     return (
-        <div className="flex w-full max-w-2xl items-center justify-center">
+        <div className="flex w-full max-w-2xl flex-col items-center space-y-4">
             <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed hover:bg-gray-50 dark:hover:bg-gray-800">
                 <div className="flex flex-col items-center justify-center pb-6 pt-5">
                     <Upload className="mb-2 h-8 w-8 text-gray-500" />
@@ -91,6 +149,22 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
                     disabled={loading}
                 />
             </label>
+
+            <div className="flex w-full items-center justify-center space-x-4">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">or</span>
+                <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <Button
+                variant="outline"
+                className="flex items-center space-x-2"
+                onClick={loadDemoFile}
+                disabled={loading}
+            >
+                <PlayCircle className="h-4 w-4" />
+                <span>Try the demo</span>
+            </Button>
         </div>
     );
 }
