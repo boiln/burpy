@@ -93,29 +93,9 @@ export function TableContextMenu({
                             Copy
                         </ContextMenuSubTrigger>
                         <ContextMenuSubContent className="w-48">
-                            <ContextMenuItem onClick={() => copyToClipboard(item.method, "Method")}>
-                                <FileCode className="mr-2 h-4 w-4" />
-                                Copy Method
-                            </ContextMenuItem>
                             <ContextMenuItem onClick={handleCopyUrl}>
                                 <Link className="mr-2 h-4 w-4" />
                                 Copy URL
-                            </ContextMenuItem>
-                            <ContextMenuItem onClick={() => copyToClipboard(item.status, "Status")}>
-                                <FileText className="mr-2 h-4 w-4" />
-                                Copy Status
-                            </ContextMenuItem>
-                            <ContextMenuItem
-                                onClick={() => copyToClipboard(item.responselength, "Length")}
-                            >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Copy Length
-                            </ContextMenuItem>
-                            <ContextMenuItem
-                                onClick={() => copyToClipboard(item.mimetype, "MIME Type")}
-                            >
-                                <FileJson className="mr-2 h-4 w-4" />
-                                Copy MIME Type
                             </ContextMenuItem>
                             <ContextMenuItem onClick={() => copyToClipboard(item.host.ip, "IP")}>
                                 <Globe className="mr-2 h-4 w-4" />
@@ -137,6 +117,11 @@ export function TableContextMenu({
                             Highlight
                         </ContextMenuSubTrigger>
                         <ContextMenuSubContent className="w-48">
+                            <ContextMenuItem onClick={() => onHighlight(null)}>
+                                <div className="mr-2 h-4 w-4 rounded-full border border-border" />
+                                None
+                            </ContextMenuItem>
+                            <ContextMenuSeparator />
                             {HIGHLIGHT_COLORS.map((color) => (
                                 <ContextMenuItem
                                     key={color.value}
@@ -146,11 +131,6 @@ export function TableContextMenu({
                                     {color.label}
                                 </ContextMenuItem>
                             ))}
-                            <ContextMenuSeparator />
-                            <ContextMenuItem onClick={() => onHighlight(null)}>
-                                <div className="mr-2 h-4 w-4 rounded-full border border-border" />
-                                None
-                            </ContextMenuItem>
                         </ContextMenuSubContent>
                     </ContextMenuSub>
 
