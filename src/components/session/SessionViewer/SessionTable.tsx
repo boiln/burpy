@@ -1,5 +1,14 @@
 "use client";
 
+import * as React from "react";
+import {
+    ColumnDef,
+    SortingState,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from "@tanstack/react-table";
 import {
     Table,
     TableBody,
@@ -8,32 +17,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import type { SessionTableProps } from "@/types/session";
-import { TableContextMenu } from "./TableContextMenu";
 import { BurpItem, HighlightColor } from "@/types/burp";
+import { columns } from "@/components/session/SessionViewer/Columns";
+import { TableContextMenu } from "@/components/session/SessionViewer/TableContextMenu";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { MessageCircle, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
-import { formatMimeType } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
-type SortableColumns =
-    | "time"
-    | "method"
-    | "url"
-    | "status"
-    | "responselength"
-    | "mimetype"
-    | "host";
-
-type SortConfig = {
-    key: SortableColumns | null;
-    direction: "asc" | "desc";
-};
-
-interface CommentIndicatorProps {
-    comment: string;
+interface SessionTableProps {
+    items: BurpItem[];
+    selectedItem: BurpItem | null;
+    onSelectItem: (item: BurpItem) => void;
+    onUpdateItem: (item: BurpItem) => void;
 }
 
 export function SessionTable({
@@ -42,253 +35,128 @@ export function SessionTable({
     onSelectItem,
     onUpdateItem,
 }: SessionTableProps) {
-    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const isHarFile = items.length > 0 && items[0].host.ip === "";
 
-    const handleSort = (key: SortableColumns) => {
-        setSortConfig((current) => ({
-            key,
-            direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
-        }));
-    };
+    const filteredColumns = React.useMemo(
+        () => columns.filter((col) => !(isHarFile && col.header === "IP")),
+        [isHarFile]
+    );
 
-    const getSortedItems = () => {
-        if (!sortConfig.key) return items;
-
-        return [...items].sort((a, b) => {
-            let aValue: string;
-            let bValue: string;
-
-            const key = sortConfig.key as SortableColumns;
-
-            if (key === "host") {
-                aValue = a.host.value;
-                bValue = b.host.value;
-            } else if (key === "mimetype") {
-                aValue = formatMimeType(a.mimetype);
-                bValue = formatMimeType(b.mimetype);
-            } else {
-                aValue = String(a[key]);
-                bValue = String(b[key]);
-            }
-
-            return sortConfig.direction === "asc"
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
-        });
-    };
-
-    const SortIcon = ({ column }: { column: SortableColumns }) => {
-        if (sortConfig.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-        return sortConfig.direction === "asc" ? (
-            <ArrowUp className="ml-2 h-4 w-4" />
-        ) : (
-            <ArrowDown className="ml-2 h-4 w-4" />
-        );
-    };
+    const table = useReactTable({
+        data: items,
+        columns: filteredColumns,
+        state: {
+            sorting,
+        },
+        onSortingChange: setSorting,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+    });
 
     const handleHighlight = (item: BurpItem, color: HighlightColor | null) => {
-        const updatedItem = {
-            ...item,
-            highlight: color,
-        };
-        onUpdateItem(updatedItem);
+        onUpdateItem({ ...item, highlight: color });
     };
 
     const handleUpdateComment = (item: BurpItem, comment: string) => {
-        const updatedItem = {
-            ...item,
-            comment,
-        };
-        onUpdateItem(updatedItem);
+        onUpdateItem({ ...item, comment });
     };
 
-    const getHighlightClass = (color: HighlightColor): string => {
+    const getHighlightClass = (color: HighlightColor | null): string => {
         if (!color) return "";
 
         const colorMap: Record<NonNullable<HighlightColor>, string> = {
-            red: "bg-red-500/10",
-            orange: "bg-orange-500/10",
-            yellow: "bg-yellow-500/10",
-            green: "bg-green-500/10",
-            cyan: "bg-cyan-500/10",
-            blue: "bg-blue-500/10",
-            purple: "bg-purple-500/10",
-            pink: "bg-pink-500/10",
+            red: "bg-red-500/20",
+            orange: "bg-orange-500/20",
+            yellow: "bg-yellow-500/20",
+            green: "bg-green-500/20",
+            cyan: "bg-cyan-500/20",
+            blue: "bg-blue-500/20",
+            purple: "bg-purple-500/20",
+            pink: "bg-pink-500/20",
         };
 
         return colorMap[color] || "";
     };
 
-    const CommentIndicator: React.FC<CommentIndicatorProps> = ({ comment }) => {
-        if (!comment.trim()) return null;
-
-        return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="inline-flex items-center gap-1 rounded bg-muted/50 px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted">
-                        <MessageCircle className="h-3 w-3" />
-                        <span className="max-w-[150px] truncate">{comment}</span>
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-md whitespace-pre-wrap">{comment}</p>
-                </TooltipContent>
-            </Tooltip>
-        );
-    };
-
     return (
         <div className="h-full overflow-hidden">
-            <div className="relative flex h-full flex-col">
-                <div className="sticky top-0 z-10 bg-background">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-[50px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("time")}
-                                    >
-                                        #
-                                        <SortIcon column="time" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[80px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("method")}
-                                    >
-                                        Method
-                                        <SortIcon column="method" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="min-w-[400px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("url")}
-                                    >
-                                        URL
-                                        <SortIcon column="url" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[80px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("status")}
-                                    >
-                                        Status
-                                        <SortIcon column="status" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[80px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("responselength")}
-                                    >
-                                        Length
-                                        <SortIcon column="responselength" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[180px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("mimetype")}
-                                    >
-                                        MIME Type
-                                        <SortIcon column="mimetype" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[120px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("host")}
-                                    >
-                                        IP
-                                        <SortIcon column="host" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="w-[180px]">
-                                    <Button
-                                        variant="ghost"
-                                        className="-ml-2 h-6 px-2 text-xs font-medium"
-                                        onClick={() => handleSort("time")}
-                                    >
-                                        Time
-                                        <SortIcon column="time" />
-                                    </Button>
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                    </Table>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                    <Table>
-                        <TableBody>
-                            {getSortedItems().map((item, index) => (
-                                <TableContextMenu
-                                    key={`${item.url}-${item.time}-${index}`}
-                                    item={item}
-                                    onHighlight={(color) => handleHighlight(item, color)}
-                                    onUpdateComment={(comment) =>
-                                        handleUpdateComment(item, comment)
-                                    }
-                                >
-                                    <TableRow
+            <div className="relative flex h-full flex-col overflow-auto">
+                <Table>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id} className="h-9 hover:bg-transparent">
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead
+                                        key={header.id}
                                         className={cn(
-                                            "cursor-pointer hover:bg-muted/50",
-                                            selectedItem === item && "bg-muted",
-                                            getHighlightClass(item.highlight)
+                                            "h-8 select-none",
+                                            header.column.getCanSort() && "cursor-pointer"
                                         )}
-                                        onClick={() => onSelectItem(item)}
+                                        style={{
+                                            width: header.getSize(),
+                                            minWidth: header.getSize(),
+                                            maxWidth: header.getSize(),
+                                        }}
+                                        onClick={header.column.getToggleSortingHandler()}
                                     >
-                                        <TableCell className="w-[50px] text-xs text-muted-foreground">
-                                            {index + 1}
+                                        <div className="flex items-center gap-1">
+                                            {flexRender(
+                                                header.column.columnDef.header,
+                                                header.getContext()
+                                            )}
+                                            {header.column.getIsSorted() && (
+                                                <span>
+                                                    {header.column.getIsSorted() === "asc"
+                                                        ? "↑"
+                                                        : "↓"}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody className="overflow-auto">
+                        {table.getRowModel().rows.map((row) => (
+                            <TableContextMenu
+                                key={row.id}
+                                item={row.original}
+                                onHighlight={(color) => handleHighlight(row.original, color)}
+                                onUpdateComment={(comment) =>
+                                    handleUpdateComment(row.original, comment)
+                                }
+                            >
+                                <TableRow
+                                    className={cn(
+                                        "h-8 select-none hover:bg-muted/50",
+                                        selectedItem === row.original && "bg-muted",
+                                        getHighlightClass(row.original.highlight)
+                                    )}
+                                    onClick={() => onSelectItem(row.original)}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell
+                                            key={cell.id}
+                                            className="p-0 px-2 text-[13px]"
+                                            style={{
+                                                width: cell.column.getSize(),
+                                                minWidth: cell.column.getSize(),
+                                                maxWidth: cell.column.getSize(),
+                                            }}
+                                        >
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext()
+                                            )}
                                         </TableCell>
-                                        <TableCell className="w-[80px]">
-                                            <span className="block truncate text-xs font-medium">
-                                                {item.method}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="min-w-[400px] max-w-[400px]">
-                                            <div className="flex items-center gap-2">
-                                                <span className="truncate">{item.url}</span>
-                                                <CommentIndicator comment={item.comment} />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="w-[80px]">
-                                            <span className="block truncate">{item.status}</span>
-                                        </TableCell>
-                                        <TableCell className="w-[80px]">
-                                            <span className="block truncate">
-                                                {item.responselength}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="w-[180px]">
-                                            <span className="block truncate" title={item.mimetype}>
-                                                {formatMimeType(item.mimetype)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="w-[120px]">
-                                            <span className="block truncate" title={item.host.ip}>
-                                                {item.host.ip}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="w-[180px]">
-                                            <span className="block truncate">{item.time}</span>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableContextMenu>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                                    ))}
+                                </TableRow>
+                            </TableContextMenu>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );

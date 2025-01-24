@@ -76,6 +76,11 @@ export function TableContextMenu({
         });
     };
 
+    const handleCopyUrl = () => {
+        const fullUrl = `${item.host.value}${item.url}`;
+        navigator.clipboard.writeText(fullUrl);
+    };
+
     return (
         <>
             <ContextMenu>
@@ -92,7 +97,7 @@ export function TableContextMenu({
                                 <FileCode className="mr-2 h-4 w-4" />
                                 Copy Method
                             </ContextMenuItem>
-                            <ContextMenuItem onClick={() => copyToClipboard(item.url, "URL")}>
+                            <ContextMenuItem onClick={handleCopyUrl}>
                                 <Link className="mr-2 h-4 w-4" />
                                 Copy URL
                             </ContextMenuItem>

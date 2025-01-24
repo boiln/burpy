@@ -46,15 +46,12 @@ export function useMessageFormatter() {
 
     const formatHttpRequestLine = (firstLine: string): { requestLine: string; host?: string } => {
         try {
-            // Match HTTP method and full URL
             const match = firstLine.match(
                 /^(\w+)\s+(https?:\/\/[^/]+)(\/[^\s]*)\s+(HTTP\/[\d.]+)$/i
             );
             if (match) {
                 const [_, method, hostPart, path, httpVersion] = match;
-                // Extract host without protocol and port
-                const host = hostPart.replace(/^https?:\/\//i, "");
-                // Return formatted request line and host
+                const host = hostPart.replace(/^https?:\/\//i, "").replace(/:\d+$/, "");
                 return {
                     requestLine: `${method} ${path} ${httpVersion}`,
                     host,

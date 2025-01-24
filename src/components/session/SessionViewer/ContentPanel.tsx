@@ -169,7 +169,7 @@ export function ContentPanel({
         <div className="flex h-full flex-col">
             <div className="shrink-0 border-b p-2">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold">
+                    <h3 className="font-semibold">
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                     </h3>
                     <div className="flex gap-1">
