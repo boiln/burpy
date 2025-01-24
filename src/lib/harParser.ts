@@ -5,23 +5,37 @@ function convertHarHeadersToString(headers: { name: string; value: string }[]): 
     return headers.map((header) => `${header.name}: ${header.value}`).join("\n");
 }
 
+function convertHarCookiesToString(cookies: { name: string; value: string }[]): string {
+    if (!cookies || cookies.length === 0) return "";
+    const cookieString = cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+    return `Cookie: ${cookieString}`;
+}
+
 function buildHttpMessage(entry: HarEntry, type: "request" | "response"): string {
     if (type === "request") {
-        const { method, url, httpVersion, headers, postData } = entry.request;
+        const { method, url, httpVersion, headers, postData, cookies } = entry.request;
         const firstLine = `${method} ${url} ${httpVersion}`;
         const headerString = convertHarHeadersToString(headers);
+        const cookieString = convertHarCookiesToString(cookies);
         const body = postData?.text || "";
-        return `${firstLine}\n${headerString}${body ? "\n\n" + body : ""}`;
+        return `${firstLine}\n${headerString}${cookieString ? "\n" + cookieString : ""}${body ? "\n\n" + body : ""}`;
     } else {
-        const { statusText, httpVersion, headers, content } = entry.response;
+        const { status, statusText, httpVersion, headers, content, cookies } = entry.response;
         const firstLine = `${httpVersion} ${statusText}`;
         const headerString = convertHarHeadersToString(headers);
+        const cookieString = cookies?.length
+            ? cookies
+                  .map(
+                      (c) =>
+                          `Set-Cookie: ${c.name}=${c.value}${c.expires ? `; Expires=${c.expires}` : ""}`
+                  )
+                  .join("\n")
+            : "";
         const body = content.text || "";
-        return `${firstLine}\n${headerString}${body ? "\n\n" + body : ""}`;
+        return `${firstLine}\n${headerString}${cookieString ? "\n" + cookieString : ""}${body ? "\n\n" + body : ""}`;
     }
 }
 
-// Add validation helper functions
 function validateHarStructure(har: any): string | null {
     if (!har?.log) {
         return "Invalid HAR format: Missing 'log' property";
