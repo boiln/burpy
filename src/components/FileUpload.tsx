@@ -20,7 +20,7 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
     const loadDemoFile = async () => {
         setLoading(true);
         try {
-            const response = await fetch("/demo.har");
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/demo.har`);
             if (!response.ok) {
                 throw new Error("Failed to load demo file");
             }
