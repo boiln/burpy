@@ -5,7 +5,7 @@ pre[class*="language-"] {
     word-spacing: normal;
     word-break: normal;
     word-wrap: normal;
-    color: #b0b0b0;
+    color: #acacac;
     font-family: inherit;
     line-height: 1.5;
     tab-size: 4;
@@ -115,7 +115,7 @@ pre[class*="language-"] {
 }
 
 .token.header-value {
-    color: #b0b0b0;
+    color: #acacac;
 }
 
 .token.cookie-name {
