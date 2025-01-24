@@ -5,55 +5,61 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+// Common MIME type mappings with standardized display formats
+const MIME_TYPE_DISPLAY: Record<string, string> = {
+    // Application types
+    "application/json": "JSON",
+    "application/xml": "XML",
+    "application/x-www-form-urlencoded": "FORM",
+    "application/javascript": "JS",
+    "application/x-javascript": "JS",
+    "application/x-protobuf": "PROTOBUF",
+    "application/x-protobuf-gz": "PROTOBUF GZ",
+    "application/octet-stream": "BINARY",
+    "application/pdf": "PDF",
+    "application/zip": "ZIP",
+
+    // Text types
+    "text/plain": "TEXT",
+    "text/html": "HTML",
+    "text/css": "CSS",
+    "text/javascript": "JS",
+    "text/csv": "CSV",
+
+    // Image types
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/gif": "GIF",
+    "image/webp": "WEBP",
+    "image/svg+xml": "SVG",
+
+    // Multipart types
+    "multipart/form-data": "FORM",
+    "multipart/mixed": "MIXED",
+};
+
 export function formatMimeType(mimeType: string): string {
-    // Common MIME type mappings
-    const mimeMap: Record<string, string> = {
-        "application/json": "JSON",
-        "application/xml": "XML",
-        "application/x-www-form-urlencoded": "Form Data",
-        "application/javascript": "JS",
-        "application/x-javascript": "JS",
-        "text/javascript": "JS",
-        "text/html": "HTML",
-        "text/plain": "Text",
-        "text/css": "CSS",
-        "text/csv": "CSV",
-        "image/jpeg": "JPEG",
-        "image/png": "PNG",
-        "image/gif": "GIF",
-        "image/webp": "WebP",
-        "image/svg+xml": "SVG",
-        "application/x-protobuf": "Protobuf",
-        "application/x-protobuf-gz": "Protobuf GZ",
-        "application/octet-stream": "Binary",
-        "application/pdf": "PDF",
-        "application/zip": "ZIP",
-        "multipart/form-data": "Form Data",
-    };
+    if (!mimeType) return "";
 
-    // Check for direct mapping
-    if (mimeType in mimeMap) {
-        return mimeMap[mimeType];
-    }
+    // Check predefined mappings first
+    const knownType = MIME_TYPE_DISPLAY[mimeType.toLowerCase()];
+    if (knownType) return knownType;
 
-    // Handle vendor specific types
-    if (mimeType.includes("vnd.")) {
-        const parts = mimeType.split(".");
+    const [type, subtype] = mimeType.split("/");
+    if (!type || !subtype) return mimeType.toUpperCase();
+
+    // Handle vendor specific types (vnd.)
+    if (subtype.includes("vnd.")) {
+        const parts = subtype.split(".");
         return parts[parts.length - 1].toUpperCase();
     }
 
-    // Handle general cases
-    const [type, subtype] = mimeType.split("/");
-
-    // If it's a common main type, use the subtype
+    // Handle general types
     if (["application", "text", "image", "audio", "video"].includes(type)) {
-        // Remove any parameters (everything after ;)
         const cleanSubtype = subtype.split(";")[0];
-        // Remove any vendor prefixes
         const finalSubtype = cleanSubtype.split("+").pop() || cleanSubtype;
         return finalSubtype.toUpperCase();
     }
 
-    // Fallback: return the subtype or the full mime type if no subtype
-    return subtype ? subtype.toUpperCase() : mimeType;
+    return mimeType.toUpperCase();
 }
