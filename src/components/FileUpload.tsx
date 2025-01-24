@@ -162,7 +162,6 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
                 onClick={loadDemoFile}
                 disabled={loading}
             >
-                <PlayCircle className="h-4 w-4" />
                 <span>Try the demo</span>
             </Button>
         </div>
