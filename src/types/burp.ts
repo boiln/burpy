@@ -39,7 +39,6 @@ export interface BurpItem {
 }
 
 export interface BurpSession {
-    burpVersion: string;
     exportTime: string;
     items: BurpItem[];
 }

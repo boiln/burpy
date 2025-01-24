@@ -70,15 +70,27 @@ export function jsonMinify(str: string): string {
     }
 }
 
-// Add a helper function to format time consistently
 function formatTime(timeStr: string): string {
     try {
-        // Parse the time string and format it consistently
         const date = new Date(timeStr);
         return date.toLocaleString();
     } catch (e) {
         console.error("Failed to format time:", e);
         return timeStr;
+    }
+}
+
+function formatUrlParts(urlStr: string): { hostValue: string; urlPath: string } {
+    try {
+        const url = new URL(urlStr);
+
+        const hostValue = `${url.protocol}//${url.hostname}`;
+        const urlPath = url.pathname + url.search;
+
+        return { hostValue, urlPath };
+    } catch (e) {
+        console.error("Failed to parse URL:", e);
+        return { hostValue: urlStr, urlPath: "" };
     }
 }
 
@@ -111,11 +123,14 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
         const decodedRequest = isRequestBase64 ? decodeBase64(requestValue) : requestValue;
         const decodedResponse = isResponseBase64 ? decodeBase64(responseValue) : responseValue;
 
+        const fullUrl = getElementText("url");
+        const { hostValue, urlPath } = formatUrlParts(fullUrl);
+
         parsedItems.push({
             time: formatTime(getElementText("time")),
-            url: getElementText("url"),
+            url: urlPath,
             host: {
-                value: host?.textContent || "",
+                value: hostValue,
                 ip: host?.getAttribute("ip") || "",
             },
             port: getElementText("port"),
@@ -143,7 +158,6 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
 
     console.log("Finished parsing items:", parsedItems.length);
     return {
-        burpVersion: "2.0",
         exportTime: new Date().toISOString(),
         items: parsedItems,
     };

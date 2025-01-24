@@ -13,7 +13,7 @@ function buildHttpMessage(entry: HarEntry, type: "request" | "response"): string
         const body = postData?.text || "";
         return `${firstLine}\n${headerString}${body ? "\n\n" + body : ""}`;
     } else {
-        const { status, statusText, httpVersion, headers, content } = entry.response;
+        const { statusText, httpVersion, headers, content } = entry.response;
         const firstLine = `${httpVersion} ${statusText}`;
         const headerString = convertHarHeadersToString(headers);
         const body = content.text || "";
@@ -30,11 +30,19 @@ export function parseHarToSession(harContent: string): BurpSession {
             const responseMessage = buildHttpMessage(entry, "response");
             const url = new URL(entry.request.url);
 
+            const formatUrl = (urlObj: URL): string => {
+                return urlObj.pathname + urlObj.search;
+            };
+
+            const formatHost = (urlObj: URL): string => {
+                return `${urlObj.protocol}//${urlObj.hostname}`;
+            };
+
             return {
                 time: new Date(entry.startedDateTime).toLocaleString(),
-                url: entry.request.url,
+                url: formatUrl(url),
                 host: {
-                    value: url.hostname,
+                    value: formatHost(url),
                     ip: entry.serverIPAddress || "",
                     port: url.port.toString(),
                 },
@@ -62,7 +70,6 @@ export function parseHarToSession(harContent: string): BurpSession {
         });
 
         return {
-            burpVersion: `HAR ${har.log.version}`,
             exportTime: new Date().toISOString(),
             items,
         };
