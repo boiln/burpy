@@ -58,62 +58,69 @@ export function parseHarToSession(harContent: string): BurpSession {
             throw new Error(structureError);
         }
 
-        // Validate each entry before processing
-        for (let i = 0; i < har.log.entries.length; i++) {
-            const entryError = validateHarEntry(har.log.entries[i], i);
-            if (entryError) {
-                throw new Error(entryError);
-            }
-        }
+        // Filter out invalid entries and map valid ones
+        const items: BurpItem[] = har.log.entries
+            .filter((entry, index) => {
+                const entryError = validateHarEntry(entry, index);
+                if (entryError) {
+                    console.warn(`Skipping invalid entry at index ${index}: ${entryError}`);
+                    return false;
+                }
+                return true;
+            })
+            .map((entry, index) => {
+                try {
+                    const requestMessage = buildHttpMessage(entry, "request");
+                    const responseMessage = buildHttpMessage(entry, "response");
+                    const url = new URL(entry.request.url);
 
-        const items: BurpItem[] = har.log.entries.map((entry, index) => {
-            try {
-                const requestMessage = buildHttpMessage(entry, "request");
-                const responseMessage = buildHttpMessage(entry, "response");
-                const url = new URL(entry.request.url);
+                    const formatUrl = (urlObj: URL): string => {
+                        return urlObj.pathname + urlObj.search;
+                    };
 
-                const formatUrl = (urlObj: URL): string => {
-                    return urlObj.pathname + urlObj.search;
-                };
+                    const formatHost = (urlObj: URL): string => {
+                        return `${urlObj.protocol}//${urlObj.hostname}`;
+                    };
 
-                const formatHost = (urlObj: URL): string => {
-                    return `${urlObj.protocol}//${urlObj.hostname}`;
-                };
-
-                return {
-                    time: new Date(entry.startedDateTime).toLocaleString(),
-                    url: formatUrl(url),
-                    host: {
-                        value: formatHost(url),
-                        ip: entry.serverIPAddress || "",
+                    return {
+                        time: new Date(entry.startedDateTime).toLocaleString(),
+                        url: formatUrl(url),
+                        host: {
+                            value: formatHost(url),
+                            ip: entry.serverIPAddress || "",
+                            port: url.port || (url.protocol === "https:" ? "443" : "80"),
+                        },
                         port: url.port || (url.protocol === "https:" ? "443" : "80"),
-                    },
-                    port: url.port || (url.protocol === "https:" ? "443" : "80"),
-                    protocol: url.protocol.replace(":", ""),
-                    method: entry.request.method,
-                    path: url.pathname + url.search,
-                    extension: url.pathname.split(".").pop() || "",
-                    request: {
-                        base64: false,
-                        value: requestMessage,
-                        decodedValue: requestMessage,
-                    },
-                    status: entry.response.status.toString(),
-                    responselength: (entry.response.content.size || 0).toString(),
-                    mimetype: entry.response.content.mimeType || "application/octet-stream",
-                    response: {
-                        base64: false,
-                        value: responseMessage,
-                        decodedValue: responseMessage,
-                    },
-                    highlight: null,
-                    comment: entry.comment || "",
-                };
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-                throw new Error(`Failed to process entry ${index}: ${errorMessage}`);
-            }
-        });
+                        protocol: url.protocol.replace(":", ""),
+                        method: entry.request.method,
+                        path: url.pathname + url.search,
+                        extension: url.pathname.split(".").pop() || "",
+                        request: {
+                            base64: false,
+                            value: requestMessage,
+                            decodedValue: requestMessage,
+                        },
+                        status: entry.response.status.toString(),
+                        responselength: (entry.response.content.size || 0).toString(),
+                        mimetype: entry.response.content.mimeType || "application/octet-stream",
+                        response: {
+                            base64: false,
+                            value: responseMessage,
+                            decodedValue: responseMessage,
+                        },
+                        highlight: null,
+                        comment: entry.comment || "",
+                    };
+                } catch (error: unknown) {
+                    console.warn(`Skipping entry ${index} due to processing error:`, error);
+                    return null;
+                }
+            })
+            .filter((item): item is BurpItem => item !== null);
+
+        if (items.length === 0) {
+            throw new Error("No valid entries found in the HAR file");
+        }
 
         return {
             exportTime: new Date().toISOString(),
