@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useSelectedItem } from "@/hooks/session/useSelectedItem";
 import { useSessionSearch } from "@/hooks/session/useSessionSearch";
+import { useContentFormat } from "@/hooks/session/useContentFormat";
 import type { SessionViewerProps } from "@/types/session";
 
 import { SearchBar } from "../shared/SearchBar";
@@ -19,15 +20,16 @@ export function SessionViewer({ session }: SessionViewerProps) {
     const { filteredItems, searchTerm, setSearchTerm, filter, setFilter } = useSessionSearch(items);
     const { selectedItem, setSelectedItem } = useSelectedItem();
 
-    const [requestFormat, setRequestFormat] = useState({
-        wrap: true,
-        prettify: true,
-    });
-
-    const [responseFormat, setResponseFormat] = useState({
-        wrap: true,
-        prettify: true,
-    });
+    const {
+        format: requestFormat,
+        setWrap: setRequestWrap,
+        setPrettify: setRequestPrettify,
+    } = useContentFormat();
+    const {
+        format: responseFormat,
+        setWrap: setResponseWrap,
+        setPrettify: setResponsePrettify,
+    } = useContentFormat();
 
     const handleUpdateItem = (updatedItem: BurpItem) => {
         setItems((prevItems) =>
@@ -70,13 +72,9 @@ export function SessionViewer({ session }: SessionViewerProps) {
                                     item={selectedItem}
                                     type="request"
                                     wrap={requestFormat.wrap}
-                                    setWrap={(wrap) =>
-                                        setRequestFormat((prev) => ({ ...prev, wrap }))
-                                    }
+                                    setWrap={setRequestWrap}
                                     prettify={requestFormat.prettify}
-                                    setPrettify={(prettify) =>
-                                        setRequestFormat((prev) => ({ ...prev, prettify }))
-                                    }
+                                    setPrettify={setRequestPrettify}
                                 />
                             </ResizablePanel>
                             <ResizableHandle />
@@ -85,13 +83,9 @@ export function SessionViewer({ session }: SessionViewerProps) {
                                     item={selectedItem}
                                     type="response"
                                     wrap={responseFormat.wrap}
-                                    setWrap={(wrap) =>
-                                        setResponseFormat((prev) => ({ ...prev, wrap }))
-                                    }
+                                    setWrap={setResponseWrap}
                                     prettify={responseFormat.prettify}
-                                    setPrettify={(prettify) =>
-                                        setResponseFormat((prev) => ({ ...prev, prettify }))
-                                    }
+                                    setPrettify={setResponsePrettify}
                                 />
                             </ResizablePanel>
                         </ResizablePanelGroup>

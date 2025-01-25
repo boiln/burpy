@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Copy, MessageCircle, Paintbrush2, Link, Globe, Clock, Terminal } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useClipboard } from "@/hooks/useClipboard";
 import type { BurpItem, HighlightColor } from "@/types/burp";
 import { toCurl } from "@/lib/toCurl";
 
@@ -23,7 +23,7 @@ interface TableContextMenuProps {
     children: React.ReactNode;
     item: BurpItem;
     items?: BurpItem[]; // Optional array of items for bulk operations
-    onHighlight: (color: HighlightColor) => void;
+    onHighlight: (color: HighlightColor | null) => void;
     onUpdateComment: (comment: string) => void;
 }
 
@@ -47,7 +47,7 @@ export function TableContextMenu({
 }: TableContextMenuProps) {
     const [showCommentDialog, setShowCommentDialog] = useState(false);
     const [comment, setComment] = useState(item.comment);
-    const { toast } = useToast();
+    const { copyToClipboard, isMounted } = useClipboard();
 
     const isBulkOperation = items && items.length > 1;
 
@@ -62,72 +62,61 @@ export function TableContextMenu({
         setShowCommentDialog(false);
     };
 
-    const copyToClipboard = (text: string, description: string) => {
-        navigator.clipboard.writeText(text);
-        toast({
-            description: `Copied ${description} to clipboard`,
-            duration: 2000,
-        });
-    };
-
-    const handleCopyUrl = () => {
+    const handleCopyUrl = async () => {
         const fullUrl = `${item.host.value}${item.url}`;
-        navigator.clipboard.writeText(fullUrl);
+        await copyToClipboard(fullUrl, "URL");
     };
 
-    const handleCopyCurl = () => {
+    const handleCopyCurl = async () => {
         const curl = toCurl(item);
-        copyToClipboard(curl, "curl command");
+        await copyToClipboard(curl, "curl command");
     };
+
+    const handleCopyHost = async () => {
+        await copyToClipboard(item.host.value, "host");
+    };
+
+    const handleCopyTime = async () => {
+        await copyToClipboard(item.time, "timestamp");
+    };
+
+    if (!isMounted) return null;
 
     return (
         <>
             <ContextMenu>
                 <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
                 <ContextMenuContent className="min-w-[180px] p-1">
-                    {/* Copy Options - Only show in single item mode */}
-                    {!isBulkOperation && (
-                        <>
-                            <ContextMenuSub>
-                                <ContextMenuSubTrigger className="h-7 px-2">
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    Copy
-                                </ContextMenuSubTrigger>
-                                <ContextMenuSubContent className="min-w-[160px] p-1">
-                                    <ContextMenuItem className="h-7 px-2" onClick={handleCopyUrl}>
-                                        <Link className="mr-2 h-4 w-4" />
-                                        URL
-                                    </ContextMenuItem>
-                                    <ContextMenuItem
-                                        className="h-7 px-2"
-                                        onClick={() => copyToClipboard(item.host.ip, "IP")}
-                                    >
-                                        <Globe className="mr-2 h-4 w-4" />
-                                        IP
-                                    </ContextMenuItem>
-                                    <ContextMenuItem
-                                        className="h-7 px-2"
-                                        onClick={() => copyToClipboard(item.time, "Time")}
-                                    >
-                                        <Clock className="mr-2 h-4 w-4" />
-                                        Time
-                                    </ContextMenuItem>
-                                    <ContextMenuSeparator className="my-0.5" />
-                                    <ContextMenuItem className="h-7 px-2" onClick={handleCopyCurl}>
-                                        <Terminal className="mr-2 h-4 w-4" />
-                                        cURL (bash)
-                                    </ContextMenuItem>
-                                </ContextMenuSubContent>
-                            </ContextMenuSub>
+                    <ContextMenuSub>
+                        <ContextMenuSubTrigger className="h-7 px-2">
+                            <Copy className="mr-2 h-4 w-4" />
+                            <span>Copy</span>
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent className="min-w-[160px] p-1">
+                            <ContextMenuItem className="h-7 px-2" onClick={handleCopyUrl}>
+                                <Link className="mr-2 h-4 w-4" />
+                                URL
+                            </ContextMenuItem>
+                            <ContextMenuItem className="h-7 px-2" onClick={handleCopyHost}>
+                                <Globe className="mr-2 h-4 w-4" />
+                                Host
+                            </ContextMenuItem>
+                            <ContextMenuItem className="h-7 px-2" onClick={handleCopyTime}>
+                                <Clock className="mr-2 h-4 w-4" />
+                                Time
+                            </ContextMenuItem>
                             <ContextMenuSeparator className="my-0.5" />
-                        </>
-                    )}
-
-                    {/* Highlight Options */}
+                            <ContextMenuItem className="h-7 px-2" onClick={handleCopyCurl}>
+                                <Terminal className="mr-2 h-4 w-4" />
+                                cURL (bash)
+                            </ContextMenuItem>
+                        </ContextMenuSubContent>
+                    </ContextMenuSub>
+                    <ContextMenuSeparator className="my-0.5" />
                     <ContextMenuSub>
                         <ContextMenuSubTrigger className="h-7 px-2">
                             <Paintbrush2 className="mr-2 h-4 w-4" />
-                            {isBulkOperation ? "Highlight" : "Highlight"}
+                            <span>Highlight {isBulkOperation ? "All" : ""}</span>
                         </ContextMenuSubTrigger>
                         <ContextMenuSubContent className="min-w-[160px] p-1">
                             <ContextMenuItem className="h-7 px-2" onClick={() => onHighlight(null)}>
@@ -154,11 +143,7 @@ export function TableContextMenu({
                         onClick={() => setShowCommentDialog(true)}
                     >
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        {isBulkOperation
-                            ? "Add Comment"
-                            : item.comment
-                              ? "Edit Comment"
-                              : "Add Comment"}
+                        {isBulkOperation ? "Comment All" : "Comment"}
                     </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
@@ -166,17 +151,16 @@ export function TableContextMenu({
             <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{isBulkOperation ? "Add Comment" : "Add Comment"}</DialogTitle>
+                        <DialogTitle>
+                            {isBulkOperation ? "Add Comment to All" : "Add Comment"}
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <Input
-                            placeholder={
-                                isBulkOperation ? "Enter bulk comment..." : "Enter comment..."
-                            }
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            autoFocus
+                            placeholder="Enter comment..."
                         />
                         <div className="flex justify-end gap-2">
                             <Button variant="outline" onClick={() => setShowCommentDialog(false)}>

@@ -20,11 +20,10 @@ import { decodeBase64, urlDecode } from "@/lib/burpParser";
 interface ContentContextMenuProps {
     children: React.ReactNode;
     onCopy: {
-        raw: () => void;
-        headers: () => void;
-        cookies: () => void;
-        payload: () => void;
-        curl?: () => void;
+        raw: () => Promise<void>;
+        headers: () => Promise<void>;
+        body: () => Promise<void>;
+        curl?: () => Promise<void>;
     };
 }
 
@@ -94,7 +93,7 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger>{children}</ContextMenuTrigger>
+            <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
             <ContextMenuContent className="min-w-[180px] p-1">
                 {hasSelection && (
                     <>
@@ -136,14 +135,9 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
                             <FileInput className="mr-2 h-4 w-4" />
                             Headers
                         </ContextMenuItem>
-                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.cookies}>
-                            <Cookie className="mr-2 h-4 w-4" />
-                            Cookies
-                        </ContextMenuItem>
-                        <ContextMenuSeparator className="my-0.5" />
-                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.payload}>
+                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.body}>
                             <FileText className="mr-2 h-4 w-4" />
-                            Payload
+                            Body
                         </ContextMenuItem>
                         {onCopy.curl && (
                             <>
