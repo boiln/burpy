@@ -139,7 +139,7 @@ export function SessionTable({
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
-                                            className="p-0 px-2 text-[13px]"
+                                            className="table-cell-base"
                                             style={{
                                                 width: cell.column.getSize(),
                                                 minWidth: cell.column.getSize(),

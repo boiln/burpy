@@ -16,7 +16,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         size: 150,
         id: "host",
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]" title={row.getValue("host")}>
+            <div className="truncate-cell" title={row.getValue("host")}>
                 {row.getValue("host")}
             </div>
         ),
@@ -26,16 +26,16 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "Method",
         size: 60,
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]">{row.getValue("method")}</div>
+            <div className="truncate-cell">{row.getValue("method")}</div>
         ),
     },
     {
         accessorKey: "url",
         header: "URL",
-        size: 500,
+        size: 200,
         cell: ({ row }: { row: any }) => (
             <div className="flex items-center gap-2">
-                <span className="truncate text-[13px]" title={row.getValue("url")}>
+                <span className="truncate-cell" title={row.getValue("url")}>
                     {row.getValue("url")}
                 </span>
                 {row.original.comment && <CommentIndicator comment={row.original.comment} />}
@@ -47,7 +47,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "Status",
         size: 60,
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]">{row.getValue("status")}</div>
+            <div className="truncate-cell">{row.getValue("status")}</div>
         ),
     },
     {
@@ -55,7 +55,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "Length",
         size: 60,
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]">{row.getValue("responselength")}</div>
+            <div className="truncate-cell">{row.getValue("responselength")}</div>
         ),
     },
     {
@@ -63,7 +63,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "MIME Type",
         size: 80,
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]" title={row.getValue("mimetype")}>
+            <div className="truncate-cell" title={row.getValue("mimetype")}>
                 {formatMimeType(row.getValue("mimetype"))}
             </div>
         ),
@@ -74,7 +74,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         size: 90,
         id: "ip",
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]" title={row.original.host.ip}>
+            <div className="truncate-cell" title={row.original.host.ip}>
                 {row.original.host.ip}
             </div>
         ),
@@ -84,7 +84,7 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "Time",
         size: 120,
         cell: ({ row }: { row: any }) => (
-            <div className="truncate text-[13px]">{row.getValue("time")}</div>
+            <div className="truncate-cell">{row.getValue("time")}</div>
         ),
     },
 ];

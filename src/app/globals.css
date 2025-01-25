@@ -125,3 +125,21 @@ html {
 .table-compact th {
     padding: 2px 4px;
 }
+
+@layer components {
+    .separator-line {
+        @apply -mx-1 my-1 h-px bg-muted;
+    }
+
+    .table-cell-base {
+        @apply p-0 px-2 text-[13px];
+    }
+
+    .truncate-cell {
+        @apply truncate text-[13px];
+    }
+
+    .focus-ring {
+        @apply focus-visible:border-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-muted;
+    }
+}
