@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
     title: "Burpy",
-    description: "View burp suite saved sessions",
+    description: "HTTP session viewer",
     icons: {
         icon: "favicon.ico",
     },
