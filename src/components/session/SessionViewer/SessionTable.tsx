@@ -69,18 +69,21 @@ export function SessionTable({
         onUpdateItem({ ...item, comment });
     };
 
-    const getHighlightClass = (color: HighlightColor | null): string => {
+    const getHighlightClass = (
+        color: HighlightColor | null,
+        isSelected: boolean = false
+    ): string => {
         if (!color) return "";
 
         const colorMap: Record<NonNullable<HighlightColor>, string> = {
-            red: "bg-red-500/20",
-            orange: "bg-orange-500/20",
-            yellow: "bg-yellow-500/20",
-            green: "bg-green-500/20",
-            cyan: "bg-cyan-500/20",
-            blue: "bg-blue-500/20",
-            purple: "bg-purple-500/20",
-            pink: "bg-pink-500/20",
+            red: isSelected ? "bg-red-500/40" : "bg-red-500/20",
+            orange: isSelected ? "bg-orange-500/40" : "bg-orange-500/20",
+            yellow: isSelected ? "bg-yellow-500/40" : "bg-yellow-500/20",
+            green: isSelected ? "bg-green-500/40" : "bg-green-500/20",
+            cyan: isSelected ? "bg-cyan-500/40" : "bg-cyan-500/20",
+            blue: isSelected ? "bg-blue-500/40" : "bg-blue-500/20",
+            purple: isSelected ? "bg-purple-500/40" : "bg-purple-500/20",
+            pink: isSelected ? "bg-pink-500/40" : "bg-pink-500/20",
         };
 
         return colorMap[color] || "";
@@ -248,10 +251,17 @@ export function SessionTable({
                                         <TableRow
                                             data-row-index={index}
                                             className={cn(
-                                                "instant-select h-8 select-none",
-                                                selectedItem === row.original && "selected-row",
-                                                selectedItems.has(row.original) && "bg-muted",
-                                                getHighlightClass(row.original.highlight)
+                                                "instant-select h-8 select-none transition-colors",
+                                                selectedItems.has(row.original) &&
+                                                    !row.original.highlight &&
+                                                    "bg-accent/50 hover:bg-accent/60",
+                                                !selectedItems.has(row.original) &&
+                                                    !row.original.highlight &&
+                                                    "hover:bg-muted/50",
+                                                getHighlightClass(
+                                                    row.original.highlight,
+                                                    selectedItems.has(row.original)
+                                                )
                                             )}
                                             onClick={(e) => handleRowClick(row.original, index, e)}
                                         >
