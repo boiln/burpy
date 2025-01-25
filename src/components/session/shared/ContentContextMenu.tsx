@@ -15,7 +15,7 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useToast } from "@/hooks/use-toast";
-import { decodeBase64, urlDecode, htmlDecode, jsonFormat, jsonMinify } from "@/lib/burpParser";
+import { decodeBase64, urlDecode } from "@/lib/burpParser";
 
 interface ContentContextMenuProps {
     children: React.ReactNode;
@@ -89,45 +89,6 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
                 });
             }
         },
-        html: async () => {
-            try {
-                const decoded = htmlDecode(getSelectedText());
-                await navigator.clipboard.writeText(decoded);
-                toast({
-                    description: "HTML decoded and copied",
-                });
-            } catch (err) {
-                toast({
-                    description: "Failed to decode HTML",
-                });
-            }
-        },
-        jsonFormat: async () => {
-            try {
-                const formatted = jsonFormat(getSelectedText());
-                await navigator.clipboard.writeText(formatted);
-                toast({
-                    description: "JSON formatted and copied",
-                });
-            } catch (err) {
-                toast({
-                    description: "Failed to format JSON",
-                });
-            }
-        },
-        jsonMinify: async () => {
-            try {
-                const minified = jsonMinify(getSelectedText());
-                await navigator.clipboard.writeText(minified);
-                toast({
-                    description: "JSON minified and copied",
-                });
-            } catch (err) {
-                toast({
-                    description: "Failed to minify JSON",
-                });
-            }
-        },
     };
 
     return (
@@ -154,19 +115,6 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
                                 <ContextMenuItem onClick={handleDecode.base64}>
                                     <FileText className="mr-2 h-4 w-4" />
                                     Base64 Decode
-                                </ContextMenuItem>
-                                <ContextMenuItem onClick={handleDecode.html}>
-                                    <FileCode className="mr-2 h-4 w-4" />
-                                    HTML Decode
-                                </ContextMenuItem>
-                                <ContextMenuSeparator />
-                                <ContextMenuItem onClick={handleDecode.jsonFormat}>
-                                    <FileJson className="mr-2 h-4 w-4" />
-                                    JSON Format
-                                </ContextMenuItem>
-                                <ContextMenuItem onClick={handleDecode.jsonMinify}>
-                                    <FileJson className="mr-2 h-4 w-4" />
-                                    JSON Minify
                                 </ContextMenuItem>
                             </ContextMenuSubContent>
                         </ContextMenuSub>
