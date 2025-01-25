@@ -39,17 +39,6 @@ export function urlDecode(str: string): string {
     }
 }
 
-export function htmlDecode(str: string): string {
-    try {
-        const txt = document.createElement("textarea");
-        txt.innerHTML = str;
-        return txt.value;
-    } catch (e) {
-        console.error("Failed to decode HTML:", e);
-        return str;
-    }
-}
-
 export function jsonFormat(str: string): string {
     try {
         const parsed = JSON.parse(str);
@@ -57,26 +46,6 @@ export function jsonFormat(str: string): string {
     } catch (e) {
         console.error("Failed to format JSON:", e);
         return str;
-    }
-}
-
-export function jsonMinify(str: string): string {
-    try {
-        const parsed = JSON.parse(str);
-        return JSON.stringify(parsed);
-    } catch (e) {
-        console.error("Failed to minify JSON:", e);
-        return str;
-    }
-}
-
-function formatTime(timeStr: string): string {
-    try {
-        const date = new Date(timeStr);
-        return date.toLocaleString();
-    } catch (e) {
-        console.error("Failed to format time:", e);
-        return timeStr;
     }
 }
 
@@ -127,7 +96,7 @@ export async function parseBurpXml(xmlContent: string): Promise<BurpSession> {
         const { hostValue, urlPath } = formatUrlParts(fullUrl);
 
         parsedItems.push({
-            time: formatTime(getElementText("time")),
+            time: new Date(getElementText("time")).toLocaleString(),
             url: urlPath,
             host: {
                 value: hostValue,
