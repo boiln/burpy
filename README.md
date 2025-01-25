@@ -3,24 +3,20 @@
 A modern, fast, and user-friendly web application for viewing Burp Suite Community Edition saved session files.
 
 Burpy (1.22.25)
-![burpy_v2](https://github.com/user-attachments/assets/f05f007c-0b5c-44bf-834d-2d82bf1ffb2f)
+![burpy_v2](https://github.com/user-attachments/assets/af473da9-6614-4cdd-83ba-0feceaac6f00)
 
 ## Features
 
 -   🚀 Fast and responsive UI
 -   📝 Syntax highlighting for HTTP requests/responses
--   🎨 Light/Dark theme support
--   💻 Cross-platform compatibility
--   📋 Context menu with copy and decode options
--   🎯 JSON formatting and minification
+-   🎨 Dark theme support
+-   💻 Cross-platform web app
+-   🎯 JSON formatting
 
-## Tech Stack
-
--   Next.js 14
+-   Next.js
 -   TypeScript
 -   Tailwind CSS
 -   Shadcn UI
--   Radix UI
 
 ## Getting Started
 
@@ -53,7 +49,7 @@ pnpm install
 pnpm dev
 ```
 
-The application will be available at `http://localhost:3069`
+The application will be available at `http://localhost:3002`
 
 ### Docker Installation
 
