@@ -248,7 +248,7 @@ export function SessionTable({
                                         <TableRow
                                             data-row-index={index}
                                             className={cn(
-                                                "instant-select h-8 select-none hover:bg-muted/50",
+                                                "instant-select h-8 select-none",
                                                 selectedItem === row.original && "selected-row",
                                                 selectedItems.has(row.original) && "bg-muted",
                                                 getHighlightClass(row.original.highlight)

@@ -127,24 +127,16 @@ html {
 }
 
 @layer components {
-    .separator-line {
-        @apply -mx-1 my-1 h-px bg-muted;
-    }
-
     .table-cell-base {
-        @apply relative p-0 px-2 text-[13px] transition-colors duration-100;
+        @apply relative cursor-default p-0 px-2 text-[13px] transition-colors duration-100;
     }
 
     .truncate-cell {
-        @apply truncate text-[13px] transition-colors duration-200 hover:bg-accent/50;
-    }
-
-    .truncate-cell:hover {
-        @apply cursor-pointer bg-accent/30;
+        @apply truncate text-[13px] transition-colors duration-200;
     }
 
     .TableRow[data-state="selected"] {
-        @apply bg-muted/80 transition-colors duration-200;
+        @apply transition-colors duration-200;
     }
 
     .focus-ring {
@@ -153,9 +145,5 @@ html {
 
     .instant-select {
         transition: none !important;
-    }
-
-    .selected-row {
-        background-color: hsl(var(--muted));
     }
 }
