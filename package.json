@@ -4,9 +4,9 @@
     "private": true,
     "homepage": "https://boiln.github.io/burpy",
     "scripts": {
-        "dev": "next dev -p 3069",
+        "dev": "next dev -p 3002",
         "build": "next build",
-        "start": "next start -p 3069",
+        "start": "next start -p 3002",
         "lint": "next lint",
         "lint:fix": "next lint --fix",
         "fmt": "prettier --write \"**/*.{ts,tsx,md,json,js,jsx,css}\"",
