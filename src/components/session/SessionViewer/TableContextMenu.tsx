@@ -14,20 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-    Copy,
-    MessageCircle,
-    Paintbrush2,
-    Link,
-    Hash,
-    FileCode,
-    Globe,
-    Clock,
-    FileJson,
-    FileText,
-} from "lucide-react";
+import { Copy, MessageCircle, Paintbrush2, Link, Globe, Clock, Terminal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BurpItem, HighlightColor } from "@/types/burp";
+import { toCurl } from "@/lib/toCurl";
 
 interface TableContextMenuProps {
     children: React.ReactNode;
@@ -85,57 +75,70 @@ export function TableContextMenu({
         navigator.clipboard.writeText(fullUrl);
     };
 
+    const handleCopyCurl = () => {
+        const curl = toCurl(item);
+        copyToClipboard(curl, "curl command");
+    };
+
     return (
         <>
             <ContextMenu>
                 <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-                <ContextMenuContent className="w-64">
+                <ContextMenuContent className="min-w-[180px] p-1">
                     {/* Copy Options - Only show in single item mode */}
                     {!isBulkOperation && (
                         <>
                             <ContextMenuSub>
-                                <ContextMenuSubTrigger>
+                                <ContextMenuSubTrigger className="h-7 px-2">
                                     <Copy className="mr-2 h-4 w-4" />
                                     Copy
                                 </ContextMenuSubTrigger>
-                                <ContextMenuSubContent className="w-48">
-                                    <ContextMenuItem onClick={handleCopyUrl}>
+                                <ContextMenuSubContent className="min-w-[160px] p-1">
+                                    <ContextMenuItem className="h-7 px-2" onClick={handleCopyUrl}>
                                         <Link className="mr-2 h-4 w-4" />
-                                        Copy URL
+                                        URL
                                     </ContextMenuItem>
                                     <ContextMenuItem
+                                        className="h-7 px-2"
                                         onClick={() => copyToClipboard(item.host.ip, "IP")}
                                     >
                                         <Globe className="mr-2 h-4 w-4" />
-                                        Copy IP
+                                        IP
                                     </ContextMenuItem>
                                     <ContextMenuItem
+                                        className="h-7 px-2"
                                         onClick={() => copyToClipboard(item.time, "Time")}
                                     >
                                         <Clock className="mr-2 h-4 w-4" />
-                                        Copy Time
+                                        Time
+                                    </ContextMenuItem>
+                                    <ContextMenuSeparator className="my-0.5" />
+                                    <ContextMenuItem className="h-7 px-2" onClick={handleCopyCurl}>
+                                        <Terminal className="mr-2 h-4 w-4" />
+                                        cURL (bash)
                                     </ContextMenuItem>
                                 </ContextMenuSubContent>
                             </ContextMenuSub>
-                            <ContextMenuSeparator />
+                            <ContextMenuSeparator className="my-0.5" />
                         </>
                     )}
 
                     {/* Highlight Options */}
                     <ContextMenuSub>
-                        <ContextMenuSubTrigger>
+                        <ContextMenuSubTrigger className="h-7 px-2">
                             <Paintbrush2 className="mr-2 h-4 w-4" />
-                            {isBulkOperation ? "Bulk Highlight" : "Highlight"}
+                            {isBulkOperation ? "Highlight" : "Highlight"}
                         </ContextMenuSubTrigger>
-                        <ContextMenuSubContent className="w-48">
-                            <ContextMenuItem onClick={() => onHighlight(null)}>
+                        <ContextMenuSubContent className="min-w-[160px] p-1">
+                            <ContextMenuItem className="h-7 px-2" onClick={() => onHighlight(null)}>
                                 <div className="mr-2 h-4 w-4 rounded-full border border-border" />
                                 None
                             </ContextMenuItem>
-                            <ContextMenuSeparator />
+                            <ContextMenuSeparator className="my-0.5" />
                             {HIGHLIGHT_COLORS.map((color) => (
                                 <ContextMenuItem
                                     key={color.value}
+                                    className="h-7 px-2"
                                     onClick={() => onHighlight(color.value)}
                                 >
                                     <div className={`mr-2 h-4 w-4 rounded-full ${color.class}`} />
@@ -146,7 +149,10 @@ export function TableContextMenu({
                     </ContextMenuSub>
 
                     {/* Comment Option */}
-                    <ContextMenuItem onClick={() => setShowCommentDialog(true)}>
+                    <ContextMenuItem
+                        className="h-7 px-2"
+                        onClick={() => setShowCommentDialog(true)}
+                    >
                         <MessageCircle className="mr-2 h-4 w-4" />
                         {isBulkOperation
                             ? "Add Comment"

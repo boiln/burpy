@@ -10,6 +10,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { useMessageFormatter } from "@/hooks/session/useMessageFormatter";
 import { useToast } from "@/hooks/use-toast";
 import { decodeBase64 } from "@/lib/burpParser";
+import { toCurl } from "@/lib/toCurl";
 import type { ContentPanelProps } from "@/types/session";
 
 import { ContentContextMenu } from "../shared/ContentContextMenu";
@@ -158,6 +159,26 @@ export function ContentPanel({
                 });
             }
         },
+        curl:
+            type === "request" && item
+                ? async () => {
+                      try {
+                          const curl = toCurl(item);
+                          await copyTextToClipboard(curl);
+                          toast({
+                              description: "Copied curl command to clipboard",
+                              duration: 2000,
+                          });
+                      } catch (err) {
+                          console.error("Failed to copy curl command:", err);
+                          toast({
+                              description: "Failed to copy to clipboard",
+                              variant: "destructive",
+                              duration: 2000,
+                          });
+                      }
+                  }
+                : undefined,
     };
 
     // Don't attempt to render until mounted

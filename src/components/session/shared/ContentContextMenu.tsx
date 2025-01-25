@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { Copy, FileCode, FileJson, FileText, Link, FileInput, Cookie, Code } from "lucide-react";
+import { Copy, FileCode, FileText, Link, FileInput, Cookie, Code, Terminal } from "lucide-react";
 
 import {
     ContextMenu,
@@ -24,6 +24,7 @@ interface ContentContextMenuProps {
         headers: () => void;
         cookies: () => void;
         payload: () => void;
+        curl?: () => void;
     };
 }
 
@@ -94,56 +95,65 @@ export function ContentContextMenu({ children, onCopy }: ContentContextMenuProps
     return (
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
-            <ContextMenuContent className="w-56">
+            <ContextMenuContent className="min-w-[180px] p-1">
                 {hasSelection && (
                     <>
-                        <ContextMenuItem onClick={handleCopySelection}>
+                        <ContextMenuItem className="h-7 px-2" onClick={handleCopySelection}>
                             <Copy className="mr-2 h-4 w-4" />
                             <span>Copy Selection</span>
                         </ContextMenuItem>
-                        <ContextMenuSeparator />
+                        <ContextMenuSeparator className="my-0.5" />
                         <ContextMenuSub>
-                            <ContextMenuSubTrigger className="flex items-center">
+                            <ContextMenuSubTrigger className="h-7 px-2">
                                 <FileCode className="mr-2 h-4 w-4" />
                                 <span>Decode Selection</span>
                             </ContextMenuSubTrigger>
-                            <ContextMenuSubContent className="w-48">
-                                <ContextMenuItem onClick={handleDecode.url}>
+                            <ContextMenuSubContent className="min-w-[160px] p-1">
+                                <ContextMenuItem className="h-7 px-2" onClick={handleDecode.url}>
                                     <Link className="mr-2 h-4 w-4" />
                                     URL Decode
                                 </ContextMenuItem>
-                                <ContextMenuItem onClick={handleDecode.base64}>
+                                <ContextMenuItem className="h-7 px-2" onClick={handleDecode.base64}>
                                     <FileText className="mr-2 h-4 w-4" />
                                     Base64 Decode
                                 </ContextMenuItem>
                             </ContextMenuSubContent>
                         </ContextMenuSub>
-                        <ContextMenuSeparator />
+                        <ContextMenuSeparator className="my-0.5" />
                     </>
                 )}
                 <ContextMenuSub>
-                    <ContextMenuSubTrigger className="flex items-center">
+                    <ContextMenuSubTrigger className="h-7 px-2">
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy</span>
                     </ContextMenuSubTrigger>
-                    <ContextMenuSubContent className="w-48">
-                        <ContextMenuItem onClick={onCopy.raw}>
+                    <ContextMenuSubContent className="min-w-[160px] p-1">
+                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.raw}>
                             <Code className="mr-2 h-4 w-4" />
                             Raw
                         </ContextMenuItem>
-                        <ContextMenuItem onClick={onCopy.headers}>
+                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.headers}>
                             <FileInput className="mr-2 h-4 w-4" />
                             Headers
                         </ContextMenuItem>
-                        <ContextMenuItem onClick={onCopy.cookies}>
+                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.cookies}>
                             <Cookie className="mr-2 h-4 w-4" />
                             Cookies
                         </ContextMenuItem>
-                        <ContextMenuSeparator />
-                        <ContextMenuItem onClick={onCopy.payload}>
+                        <ContextMenuSeparator className="my-0.5" />
+                        <ContextMenuItem className="h-7 px-2" onClick={onCopy.payload}>
                             <FileText className="mr-2 h-4 w-4" />
                             Payload
                         </ContextMenuItem>
+                        {onCopy.curl && (
+                            <>
+                                <ContextMenuSeparator className="my-0.5" />
+                                <ContextMenuItem className="h-7 px-2" onClick={onCopy.curl}>
+                                    <Terminal className="mr-2 h-4 w-4" />
+                                    cURL (bash)
+                                </ContextMenuItem>
+                            </>
+                        )}
                     </ContextMenuSubContent>
                 </ContextMenuSub>
             </ContextMenuContent>
