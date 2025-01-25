@@ -1,14 +1,14 @@
 # Burpy - Burp Suite HTTP session viewer
 
-A modern, fast, and user-friendly web application for viewing Burp Suite Community Edition saved session files.
+A modern, fast, and user-friendly web application for viewing saved HTTP session files.
 
 Burpy (1.22.25)
 ![burpy_v2](https://github.com/user-attachments/assets/af473da9-6614-4cdd-83ba-0feceaac6f00)
 
 ## Features
 
--   🚀 Fast and responsive UI
--   📝 Syntax highlighting for HTTP requests/responses
+-   🚀 Fast and responsive
+-   📝 Syntax highlighting
 -   🎨 Dark theme support
 -   💻 Cross-platform web app
 -   🎯 JSON formatting
