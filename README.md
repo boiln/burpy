@@ -1,4 +1,4 @@
-# Burpy - Burp Suite HTTP session viewer
+# Burpy - HTTP session viewer
 
 A modern, fast, and user-friendly web application for viewing saved HTTP session files.
 
