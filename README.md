@@ -2,8 +2,8 @@
 
 A modern, fast, and user-friendly web application for viewing saved HTTP session files.
 
-Burpy (1.22.25)
-![burpy_v2](https://github.com/user-attachments/assets/af473da9-6614-4cdd-83ba-0feceaac6f00)
+Burpy (1.25.25)
+![burpy_v2](https://github.com/user-attachments/assets/87f4760f-2d62-4219-aa2b-640d97a02467)
 
 ## Features
 
