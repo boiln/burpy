@@ -10,7 +10,6 @@ export function toCurl(item: BurpItem): string {
     const requestLines = item.request.decodedValue.split("\n");
     const headers: Record<string, string> = {};
     let bodyStartIndex = -1;
-    let cookieHeader = "";
 
     // Skip the first line as it's the request line
     for (let i = 1; i < requestLines.length; i++) {
@@ -23,28 +22,17 @@ export function toCurl(item: BurpItem): string {
         if (name && valueParts.length > 0) {
             const headerName = name.trim();
             const headerValue = valueParts.join(":").trim();
-
-            // Handle cookies separately
-            if (headerName.toLowerCase() === "cookie") {
-                cookieHeader = headerValue;
-            } else {
-                headers[headerName] = headerValue;
-            }
+            headers[headerName] = headerValue;
         }
     }
 
-    // Add headers to curl command (excluding Cookie header as we'll handle it separately)
+    // Add all headers to curl command including Cookie header
     const headerParts: string[] = [];
     for (const [name, value] of Object.entries(headers)) {
         headerParts.push(`-H $'${name}: ${value}'`);
     }
     if (headerParts.length > 0) {
         curl_parts.push(headerParts.join(" "));
-    }
-
-    // Add cookies in a single -b flag if they exist
-    if (cookieHeader) {
-        curl_parts.push(`-b $'${cookieHeader}'`);
     }
 
     // Handle request body if it exists
