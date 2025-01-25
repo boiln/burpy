@@ -132,7 +132,7 @@ html {
     }
 
     .table-cell-base {
-        @apply relative p-0 px-2 text-[13px];
+        @apply relative p-0 px-2 text-[13px] transition-colors duration-100;
     }
 
     .truncate-cell {
@@ -158,51 +158,4 @@ html {
     .selected-row {
         background-color: hsl(var(--muted));
     }
-
-    thead {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        background-color: hsl(var(--background));
-    }
-
-    thead tr {
-        position: relative;
-    }
-
-    thead th {
-        position: sticky;
-        top: 0;
-        background-color: hsl(var(--background));
-        z-index: 20;
-    }
-
-    thead th::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        border-bottom: 1px solid hsl(var(--border));
-    }
-}
-
-.table-container {
-    --header-height: 40px; /* Adjust based on your header height */
-    position: relative;
-    height: 100%;
-}
-
-.sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background-color: hsl(var(--background));
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid hsl(var(--border));
-}
-
-.scroll-body {
-    height: calc(100% - var(--header-height));
-    overflow-y: auto;
 }

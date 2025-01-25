@@ -39,6 +39,8 @@ export function SessionTable({
     onUpdateItem,
 }: SessionTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [selectedItems, setSelectedItems] = React.useState<Set<BurpItem>>(new Set());
+    const [lastSelectedIndex, setLastSelectedIndex] = React.useState<number | null>(null);
     const isHarFile = items.length > 0 && items[0].host.ip === "";
 
     const filteredColumns = React.useMemo(
@@ -89,8 +91,35 @@ export function SessionTable({
         items.forEach((item) => onUpdateItem({ ...item, comment }));
     };
 
-    // Add ref for the scrollable container instead of TableBody
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+    const handleRowClick = (item: BurpItem, index: number, event: React.MouseEvent) => {
+        if (event.shiftKey && lastSelectedIndex !== null) {
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            const newSelection = new Set(selectedItems);
+
+            for (let i = start; i <= end; i++) {
+                newSelection.add(items[i]);
+            }
+
+            setSelectedItems(newSelection);
+        } else {
+            if (event.ctrlKey || event.metaKey) {
+                const newSelection = new Set(selectedItems);
+                if (newSelection.has(item)) {
+                    newSelection.delete(item);
+                } else {
+                    newSelection.add(item);
+                }
+                setSelectedItems(newSelection);
+            } else {
+                setSelectedItems(new Set([item]));
+            }
+            setLastSelectedIndex(index);
+        }
+        onSelectItem(item);
+    };
 
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
@@ -101,11 +130,21 @@ export function SessionTable({
                 (e.key === "ArrowUp" && currentIndex > 0) ||
                 (e.key === "ArrowDown" && currentIndex < items.length - 1)
             ) {
-                e.preventDefault(); // Prevent default scroll behavior
+                e.preventDefault();
 
                 const newIndex = e.key === "ArrowUp" ? currentIndex - 1 : currentIndex + 1;
                 const newItem = items[newIndex];
+
+                if (e.shiftKey) {
+                    const newSelection = new Set(selectedItems);
+                    newSelection.add(newItem);
+                    setSelectedItems(newSelection);
+                } else {
+                    setSelectedItems(new Set([newItem]));
+                }
+
                 onSelectItem(newItem);
+                setLastSelectedIndex(newIndex);
 
                 // Find the row element within the scrollable container
                 const rowElement = scrollContainerRef.current?.querySelector(
@@ -129,27 +168,18 @@ export function SessionTable({
 
         window.addEventListener("keydown", handleKeyPress);
         return () => window.removeEventListener("keydown", handleKeyPress);
-    }, [selectedItem, items, onSelectItem]);
+    }, [selectedItem, items, onSelectItem, selectedItems]);
+
+    const handleBulkHighlight = (color: HighlightColor | null) => {
+        const itemsToUpdate = Array.from(selectedItems);
+        itemsToUpdate.forEach((item) => {
+            onUpdateItem({ ...item, highlight: color });
+        });
+    };
 
     return (
         <div className="h-full overflow-hidden">
             <div className="relative flex h-full flex-col">
-                <div className="flex items-center justify-between border-b p-2">
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                                handleBulkComment(
-                                    table.getSelectedRowModel().rows.map((r) => r.original),
-                                    ""
-                                )
-                            }
-                        >
-                            Clear Comments
-                        </Button>
-                    </div>
-                </div>
                 <div className="relative flex-1">
                     <div className="absolute inset-0 overflow-auto" ref={scrollContainerRef}>
                         <Table>
@@ -196,11 +226,23 @@ export function SessionTable({
                                     <TableContextMenu
                                         key={row.id}
                                         item={row.original}
+                                        items={
+                                            selectedItems.has(row.original)
+                                                ? Array.from(selectedItems)
+                                                : undefined
+                                        }
                                         onHighlight={(color) =>
-                                            handleHighlight(row.original, color)
+                                            selectedItems.has(row.original)
+                                                ? handleBulkHighlight(color)
+                                                : handleHighlight(row.original, color)
                                         }
                                         onUpdateComment={(comment) =>
-                                            handleUpdateComment(row.original, comment)
+                                            selectedItems.has(row.original)
+                                                ? handleBulkComment(
+                                                      Array.from(selectedItems),
+                                                      comment
+                                                  )
+                                                : handleUpdateComment(row.original, comment)
                                         }
                                     >
                                         <TableRow
@@ -208,9 +250,10 @@ export function SessionTable({
                                             className={cn(
                                                 "instant-select h-8 select-none hover:bg-muted/50",
                                                 selectedItem === row.original && "selected-row",
+                                                selectedItems.has(row.original) && "bg-muted",
                                                 getHighlightClass(row.original.highlight)
                                             )}
-                                            onClick={() => onSelectItem(row.original)}
+                                            onClick={(e) => handleRowClick(row.original, index, e)}
                                         >
                                             {row.getVisibleCells().map((cell) => (
                                                 <TableCell

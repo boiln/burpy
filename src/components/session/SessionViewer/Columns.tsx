@@ -34,8 +34,8 @@ export const columns: ColumnDef<BurpItem>[] = [
         header: "URL",
         size: 200,
         cell: ({ row }: { row: any }) => (
-            <div className="flex items-center gap-2">
-                <span className="truncate-cell" title={row.getValue("url")}>
+            <div className="flex items-center justify-between gap-2">
+                <span className="truncate-cell flex-1" title={row.getValue("url")}>
                     {row.getValue("url")}
                 </span>
                 {row.original.comment && <CommentIndicator comment={row.original.comment} />}

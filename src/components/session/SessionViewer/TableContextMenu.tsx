@@ -32,6 +32,7 @@ import type { BurpItem, HighlightColor } from "@/types/burp";
 interface TableContextMenuProps {
     children: React.ReactNode;
     item: BurpItem;
+    items?: BurpItem[]; // Optional array of items for bulk operations
     onHighlight: (color: HighlightColor) => void;
     onUpdateComment: (comment: string) => void;
 }
@@ -50,12 +51,15 @@ const HIGHLIGHT_COLORS: { label: string; value: HighlightColor; class: string }[
 export function TableContextMenu({
     children,
     item,
+    items,
     onHighlight,
     onUpdateComment,
 }: TableContextMenuProps) {
     const [showCommentDialog, setShowCommentDialog] = useState(false);
     const [comment, setComment] = useState(item.comment);
     const { toast } = useToast();
+
+    const isBulkOperation = items && items.length > 1;
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
@@ -86,35 +90,42 @@ export function TableContextMenu({
             <ContextMenu>
                 <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
                 <ContextMenuContent className="w-64">
-                    {/* Copy Options */}
-                    <ContextMenuSub>
-                        <ContextMenuSubTrigger>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy
-                        </ContextMenuSubTrigger>
-                        <ContextMenuSubContent className="w-48">
-                            <ContextMenuItem onClick={handleCopyUrl}>
-                                <Link className="mr-2 h-4 w-4" />
-                                Copy URL
-                            </ContextMenuItem>
-                            <ContextMenuItem onClick={() => copyToClipboard(item.host.ip, "IP")}>
-                                <Globe className="mr-2 h-4 w-4" />
-                                Copy IP
-                            </ContextMenuItem>
-                            <ContextMenuItem onClick={() => copyToClipboard(item.time, "Time")}>
-                                <Clock className="mr-2 h-4 w-4" />
-                                Copy Time
-                            </ContextMenuItem>
-                        </ContextMenuSubContent>
-                    </ContextMenuSub>
-
-                    <ContextMenuSeparator />
+                    {/* Copy Options - Only show in single item mode */}
+                    {!isBulkOperation && (
+                        <>
+                            <ContextMenuSub>
+                                <ContextMenuSubTrigger>
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Copy
+                                </ContextMenuSubTrigger>
+                                <ContextMenuSubContent className="w-48">
+                                    <ContextMenuItem onClick={handleCopyUrl}>
+                                        <Link className="mr-2 h-4 w-4" />
+                                        Copy URL
+                                    </ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => copyToClipboard(item.host.ip, "IP")}
+                                    >
+                                        <Globe className="mr-2 h-4 w-4" />
+                                        Copy IP
+                                    </ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => copyToClipboard(item.time, "Time")}
+                                    >
+                                        <Clock className="mr-2 h-4 w-4" />
+                                        Copy Time
+                                    </ContextMenuItem>
+                                </ContextMenuSubContent>
+                            </ContextMenuSub>
+                            <ContextMenuSeparator />
+                        </>
+                    )}
 
                     {/* Highlight Options */}
                     <ContextMenuSub>
                         <ContextMenuSubTrigger>
                             <Paintbrush2 className="mr-2 h-4 w-4" />
-                            Highlight
+                            {isBulkOperation ? "Bulk Highlight" : "Highlight"}
                         </ContextMenuSubTrigger>
                         <ContextMenuSubContent className="w-48">
                             <ContextMenuItem onClick={() => onHighlight(null)}>
@@ -137,7 +148,11 @@ export function TableContextMenu({
                     {/* Comment Option */}
                     <ContextMenuItem onClick={() => setShowCommentDialog(true)}>
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        {item.comment ? "Edit Comment" : "Add Comment"}
+                        {isBulkOperation
+                            ? "Add Comment"
+                            : item.comment
+                              ? "Edit Comment"
+                              : "Add Comment"}
                     </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
@@ -145,11 +160,13 @@ export function TableContextMenu({
             <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add Comment</DialogTitle>
+                        <DialogTitle>{isBulkOperation ? "Add Comment" : "Add Comment"}</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <Input
-                            placeholder="Enter comment..."
+                            placeholder={
+                                isBulkOperation ? "Enter bulk comment..." : "Enter comment..."
+                            }
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             onKeyDown={handleKeyDown}
