@@ -152,6 +152,22 @@ export class HttpMessageParser {
 
         throw new Error("Unsupported format");
     }
+
+    async parseAsync<T>(
+        input: T,
+        mimeType?: string
+    ): Promise<{ request: string; response: string }> {
+        return new Promise((resolve, reject) => {
+            requestIdleCallback(() => {
+                try {
+                    const result = this.parse(input, mimeType);
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    }
 }
 
 // Utility function to create default parser with registered formats

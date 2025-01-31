@@ -1,0 +1,12 @@
+[data-panel-group] {
+    display: flex !important;
+    overflow: hidden !important;
+}
+
+[data-panel-group][data-panel-group-direction="horizontal"] {
+    flex-direction: row;
+}
+
+[data-panel-group][data-panel-group-direction="vertical"] {
+    flex-direction: column;
+}
