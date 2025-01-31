@@ -12,36 +12,73 @@ export interface HttpParser<T> {
 
 export class BurpParser implements HttpParser<BurpEntry> {
     private decodeBase64(str: string): string {
-        try {
-            return atob(str);
-        } catch (error) {
-            console.error("Base64 decoding error:", error);
+        // If string is empty or not a string, return empty string
+        if (!str || typeof str !== "string") {
             return "";
+        }
+
+        // Check if the string looks like base64
+        const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+        if (!base64Regex.test(str)) {
+            return str; // Return original string if not base64
+        }
+
+        try {
+            // Try to decode, but handle padding issues
+            let paddedStr = str;
+            while (paddedStr.length % 4 !== 0) {
+                paddedStr += "=";
+            }
+            return atob(paddedStr);
+        } catch (error) {
+            console.warn("Base64 decoding failed, returning original string:", error);
+            return str; // Return original string if decoding fails
         }
     }
 
     parseRequest(entry: BurpEntry): string {
-        const headers = entry.request.headers.join("\r\n");
+        // If we have a raw request body, decode and use it directly
+        if (entry.request.body) {
+            const decodedBody = this.decodeBase64(entry.request.body);
+            if (decodedBody && decodedBody.includes("\r\n")) {
+                return decodedBody;
+            }
+        }
+
+        // Otherwise construct the request from individual parts
+        const headers = entry.request.headers
+            .map((header) => this.decodeBase64(header))
+            .join("\r\n");
         const protocol = entry.request.protocol || "HTTP/1.1";
 
-        return [
-            `${entry.request.method} ${entry.request.url} ${protocol}`,
-            headers,
-            "",
-            this.decodeBase64(entry.request.body),
-        ].join("\r\n");
+        // Clean up the URL - remove any http(s):// prefix and ensure proper path format
+        let url = entry.request.url;
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            try {
+                const urlObj = new URL(url);
+                url = urlObj.pathname + urlObj.search;
+            } catch (e) {
+                url = url.replace(/^https?:\/\/[^\/]+/, "");
+            }
+        }
+
+        // Ensure the path starts with a forward slash
+        url = url.startsWith("/") ? url : `/${url}`;
+
+        // Construct the request line
+        const requestLine = `${entry.request.method} ${url} ${protocol}`;
+
+        return [requestLine, headers].join("\r\n");
     }
 
     parseResponse(entry: BurpEntry): string {
-        const headers = entry.response.headers.join("\r\n");
+        const headers = entry.response.headers
+            .map((header) => this.decodeBase64(header))
+            .join("\r\n");
         const protocol = entry.request.protocol || "HTTP/1.1";
+        const body = this.decodeBase64(entry.response.body);
 
-        return [
-            `${protocol} ${entry.response.status} ${entry.response.statusText}`,
-            headers,
-            "",
-            this.decodeBase64(entry.response.body),
-        ].join("\r\n");
+        return [`${protocol} ${entry.response.status}`, headers, "", body].join("\r\n");
     }
 
     validate(raw: unknown): raw is BurpEntry {
@@ -56,10 +93,11 @@ export class BurpParser implements HttpParser<BurpEntry> {
             const getElementContent = (selector: string) =>
                 doc.querySelector(selector)?.textContent || "";
 
-            // Decode and parse raw request to get protocol
-            const rawRequest = atob(getElementContent("request"));
-            const [requestLine] = rawRequest.split("\r\n");
-            const [, , protocol] = requestLine.split(" ");
+            // Get the raw request and response
+            const rawRequest = getElementContent("request");
+            const rawResponse = getElementContent("response");
+            const requestHeaders = getElementContent("requestheaders");
+            const responseHeaders = getElementContent("responseheaders");
 
             return {
                 startTime: new Date().toISOString(),
@@ -67,17 +105,17 @@ export class BurpParser implements HttpParser<BurpEntry> {
                 request: {
                     method: getElementContent("method"),
                     url: getElementContent("url"),
-                    protocol: protocol || "HTTP/1.1",
-                    headers: [getElementContent("requestheaders")],
-                    body: getElementContent("request"),
+                    protocol: "HTTP/1.1",
+                    headers: requestHeaders ? [requestHeaders] : [],
+                    body: rawRequest || "",
                 },
                 response: {
                     status: parseInt(getElementContent("status"), 10),
                     statusText: getElementContent("statustext"),
-                    headers: [getElementContent("responseheaders")],
-                    body: getElementContent("response"),
-                    mimeType: getElementContent("mimetype"),
-                    contentLength: parseInt(getElementContent("contentlength"), 10),
+                    headers: responseHeaders ? [responseHeaders] : [],
+                    body: rawResponse || "",
+                    mimeType: getElementContent("mimetype") || "text/plain",
+                    contentLength: parseInt(getElementContent("contentlength"), 10) || 0,
                 },
             };
         } catch (error) {
@@ -108,7 +146,7 @@ export class HarParser implements HttpParser<HarEntry> {
         const protocol = entry.response.httpVersion;
 
         return [
-            `${protocol} ${entry.response.status} ${entry.response.statusText}`,
+            `${protocol} ${entry.response.statusText}`,
             `Content-Length: ${entry.response.contentLength.toString()}`,
             headers,
             "",

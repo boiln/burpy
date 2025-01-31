@@ -19,8 +19,9 @@ import {
 } from "@tanstack/react-table";
 import { useState, useMemo } from "react";
 import { ArrowUpDown } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/session-context";
 
 interface RequestTableProps {
     session: BurpSession | null;
@@ -37,6 +38,7 @@ type RequestData = {
     mimeType: string;
     length: number;
     time: string;
+    entry: any;
 };
 
 const columns: ColumnDef<RequestData>[] = [
@@ -201,24 +203,87 @@ const columns: ColumnDef<RequestData>[] = [
 
 export function RequestTable({ session }: RequestTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
+    const { handleSelectEntry } = useSession();
 
     const data = useMemo(() => {
         if (!session) return [];
 
         return session.entries.map((entry, index) => {
-            const url = new URL(entry.request.url);
-            return {
-                id: `${entry.startTime}-${index}`,
-                index: index + 1,
-                host: url.host,
-                method: entry.request.method,
-                url: url.pathname + url.search,
-                status: entry.response.status,
-                statusText: entry.response.statusText,
-                mimeType: entry.response.mimeType,
-                length: entry.response.contentLength,
-                time: new Date(entry.startTime).toLocaleTimeString(),
-            };
+            try {
+                let host = "";
+                let pathname = "";
+                let search = "";
+
+                // Validate required fields
+                if (!entry.request?.url) {
+                    console.warn(`Missing URL for entry ${index}`);
+                    return {
+                        id: `error-${index}`,
+                        index: index + 1,
+                        host: "Invalid URL",
+                        method: entry.request?.method || "UNKNOWN",
+                        url: "/",
+                        status: entry.response?.status || 0,
+                        statusText: entry.response?.statusText || "",
+                        mimeType: entry.response?.mimeType || "unknown",
+                        length: entry.response?.contentLength || 0,
+                        time: entry.startTime
+                            ? new Date(entry.startTime).toLocaleTimeString()
+                            : "-",
+                        entry,
+                    };
+                }
+
+                // Parse URL
+                try {
+                    const url = new URL(entry.request.url);
+                    host = url.host;
+                    pathname = url.pathname;
+                    search = url.search;
+                } catch (urlError) {
+                    // Handle invalid URLs gracefully
+                    console.warn(`Invalid URL format for entry ${index}: ${entry.request.url}`);
+                    const urlParts = entry.request.url.split("/");
+                    if (urlParts.length >= 3) {
+                        host = urlParts[2];
+                        pathname = "/" + urlParts.slice(3).join("/");
+                    } else {
+                        host = entry.request.url;
+                        pathname = "/";
+                    }
+                }
+
+                // Create table row data with null checks
+                return {
+                    id: `${entry.startTime || "unknown"}-${index}`,
+                    index: index + 1,
+                    host,
+                    method: entry.request?.method || "UNKNOWN",
+                    url: pathname + search,
+                    status: entry.response?.status || 0,
+                    statusText: entry.response?.statusText || "",
+                    mimeType: entry.response?.mimeType || "unknown",
+                    length: entry.response?.contentLength || 0,
+                    time: entry.startTime ? new Date(entry.startTime).toLocaleTimeString() : "-",
+                    entry,
+                };
+            } catch (error) {
+                // Fallback for completely invalid entries
+                console.error(`Error processing entry ${index}:`, error);
+                return {
+                    id: `error-${index}`,
+                    index: index + 1,
+                    host: "Error",
+                    method: "ERROR",
+                    url: "/",
+                    status: 0,
+                    statusText: "Error",
+                    mimeType: "unknown",
+                    length: 0,
+                    time: "-",
+                    entry,
+                };
+            }
         });
     }, [session]);
 
@@ -288,7 +353,20 @@ export function RequestTable({ session }: RequestTableProps) {
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    className="flex hover:bg-accent"
+                                    className={cn(
+                                        "flex cursor-pointer hover:bg-accent",
+                                        row.getIsSelected() && "bg-accent"
+                                    )}
+                                    onClick={() => handleSelectEntry(row.original.entry)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            handleSelectEntry(row.original.entry);
+                                        }
+                                    }}
+                                    tabIndex={0}
+                                    role="row"
+                                    aria-selected={row.getIsSelected()}
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell

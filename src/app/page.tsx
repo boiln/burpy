@@ -40,7 +40,7 @@ export default function Home() {
                     direction="vertical"
                     className="min-h-[calc(100vh-4rem)] rounded-lg border"
                 >
-                    <ResizablePanel defaultSize={60} minSize={30}>
+                    <ResizablePanel defaultSize={35} minSize={30}>
                         <div className="h-full p-3">
                             <RequestTable session={session} />
                         </div>
@@ -51,16 +51,20 @@ export default function Home() {
                     <ResizablePanel defaultSize={40}>
                         <ResizablePanelGroup direction="horizontal">
                             <ResizablePanel defaultSize={50}>
-                                <div className="h-full p-3">
-                                    <RequestViewer />
+                                <div className="h-full overflow-hidden">
+                                    <div className="h-full">
+                                        <RequestViewer />
+                                    </div>
                                 </div>
                             </ResizablePanel>
 
                             <ResizableHandle />
 
                             <ResizablePanel defaultSize={50}>
-                                <div className="h-full p-3">
-                                    <ResponseViewer />
+                                <div className="h-full overflow-hidden">
+                                    <div className="h-full">
+                                        <ResponseViewer />
+                                    </div>
                                 </div>
                             </ResizablePanel>
                         </ResizablePanelGroup>

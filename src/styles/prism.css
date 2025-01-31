@@ -5,11 +5,13 @@ pre[class*="language-"] {
     word-spacing: normal;
     word-break: normal;
     word-wrap: normal;
-    color: #acacac;
-    font-family: inherit;
-    line-height: 1.5;
+    color: #e4e4e4;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+    line-height: 1.4;
     tab-size: 4;
     hyphens: none;
+    background: transparent;
 }
 
 .token.comment,
@@ -70,11 +72,11 @@ pre[class*="language-"] {
 
 /* URL and Query parameters */
 .token.url {
-    color: #d1e8f9;
+    color: #9cdcfe;
 }
 
 .token.path {
-    color: #d1e8f9;
+    color: #9cdcfe;
 }
 
 .token.query {
@@ -82,15 +84,15 @@ pre[class*="language-"] {
 }
 
 .token.query-delimiter {
-    color: #e4e4e4;
+    color: #808080;
 }
 
 .token.query-param {
-    color: #bbcdff;
+    color: #9cdcfe;
 }
 
 .token.param-name {
-    color: #bbcdff;
+    color: #9cdcfe;
 }
 
 .token.param-value {
@@ -98,29 +100,29 @@ pre[class*="language-"] {
 }
 
 .token.query-separator {
-    color: #e4e4e4;
+    color: #808080;
 }
 
 /* Existing styles */
 .token.http-method {
-    color: #8b5cf6;
-    font-weight: 600;
+    color: #c586c0;
+    font-weight: 500;
 }
 
 /* Headers */
 
 .token.header-name {
-    color: #d1e8f9;
-    font-weight: 500;
+    color: #9cdcfe;
+    opacity: 0.9;
 }
 
 .token.header-value {
-    color: #acacac;
+    color: #d4d4d4;
+    opacity: 0.8;
 }
 
 .token.cookie-name {
-    color: #bbcdff;
-    font-weight: 500;
+    color: #9cdcfe;
 }
 
 .token.cookie-value {
@@ -129,42 +131,52 @@ pre[class*="language-"] {
 
 /* HTTP Status Codes - 2xx Success */
 
-.token.status-code-200 {
-    color: #22c55e; /* Green */
-    font-weight: 600;
+.token.status-code-200,
+.token.status-code-201 {
+    color: #4ec9b0;
+    font-weight: 500;
 }
-.token.status-text-200 {
-    color: #15803d; /* Darker green */
+
+.token.status-text-200,
+.token.status-text-201 {
+    color: #4ec9b0;
+    opacity: 0.9;
 }
 
 /* HTTP Status Codes - 3xx Redirection */
 
 .token.status-code-300 {
-    color: #3b82f6; /* Blue */
-    font-weight: 600;
+    color: #569cd6;
+    font-weight: 500;
 }
+
 .token.status-text-300 {
-    color: #1d4ed8; /* Darker blue */
+    color: #569cd6;
+    opacity: 0.9;
 }
 
 /* HTTP Status Codes - 4xx Client Error */
 
 .token.status-code-400 {
-    color: #f97316; /* Orange */
-    font-weight: 600;
+    color: #f97316;
+    font-weight: 500;
 }
+
 .token.status-text-400 {
-    color: #c2410c; /* Darker orange */
+    color: #f97316;
+    opacity: 0.9;
 }
 
 /* HTTP Status Codes - 5xx Server Error */
 
 .token.status-code-500 {
-    color: #ef4444; /* Red */
-    font-weight: 600;
+    color: #ef4444;
+    font-weight: 500;
 }
+
 .token.status-text-500 {
-    color: #b91c1c; /* Darker red */
+    color: #ef4444;
+    opacity: 0.9;
 }
 
 /* JSON specific */
@@ -183,7 +195,6 @@ pre[class*="language-"] {
 
 .token.boolean {
     color: #569cd6;
-    font-weight: 500;
 }
 
 .token.null {

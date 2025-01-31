@@ -5,6 +5,7 @@ import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-css";
 import "prismjs/components/prism-markdown";
 import "prismjs/components/prism-yaml";
+import "prismjs/components/prism-xml-doc";
 
 if (typeof window !== "undefined") {
     Prism.languages.http = {
