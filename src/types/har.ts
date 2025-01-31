@@ -1,12 +1,16 @@
+export type HighlightColor =
+    | "red"
+    | "green"
+    | "blue"
+    | "cyan"
+    | "yellow"
+    | "pink"
+    | "purple"
+    | "orange";
+
 export interface HarHeader {
     name: string;
     value: string;
-}
-
-export interface HarPostData {
-    mimeType: string;
-    text: string;
-    params: any[];
 }
 
 export interface HarRequest {
@@ -14,18 +18,10 @@ export interface HarRequest {
     url: string;
     httpVersion: string;
     headers: HarHeader[];
-    queryString: any[];
-    cookies: any[];
-    headersSize: number;
-    bodySize: number;
-    postData?: HarPostData;
-}
-
-export interface HarContent {
-    size: number;
-    mimeType: string;
-    text?: string;
-    encoding?: string;
+    postData?: {
+        mimeType: string;
+        text: string;
+    };
 }
 
 export interface HarResponse {
@@ -33,11 +29,11 @@ export interface HarResponse {
     statusText: string;
     httpVersion: string;
     headers: HarHeader[];
-    cookies: any[];
-    content: HarContent;
-    redirectURL: string;
-    headersSize: number;
-    bodySize: number;
+    contentLength: number;
+    content: {
+        mimeType: string;
+        text?: string;
+    };
 }
 
 export interface HarEntry {
@@ -45,22 +41,12 @@ export interface HarEntry {
     time: number;
     request: HarRequest;
     response: HarResponse;
-    cache: any;
-    timings: any;
-    serverIPAddress?: string;
-    connection?: string;
+    highlight?: HighlightColor;
     comment?: string;
 }
 
-export interface HarLog {
-    version: string;
-    creator: {
-        name: string;
-        version: string;
-    };
+export interface HarSession {
+    id: string;
+    name: string;
     entries: HarEntry[];
-}
-
-export interface HarFile {
-    log: HarLog;
 }

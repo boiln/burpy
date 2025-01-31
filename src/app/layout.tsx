@@ -1,8 +1,8 @@
 import { JetBrains_Mono } from "next/font/google";
 
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorBoundary } from "@/components/error";
 
 import type { Metadata } from "next";
 
@@ -11,15 +11,13 @@ import "@/app/prism.css";
 
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
-    // Include regular and medium weights for better readability
     weight: ["400", "500"],
-    // Enable variable font for better performance
     variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
     title: "Burpy",
-    description: "HTTP session viewer",
+    description: "HTTP requests viewer",
     icons: {
         icon: "favicon.ico",
     },

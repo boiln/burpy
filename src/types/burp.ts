@@ -1,44 +1,39 @@
 export type HighlightColor =
     | "red"
-    | "orange"
-    | "yellow"
     | "green"
-    | "cyan"
     | "blue"
-    | "purple"
+    | "cyan"
+    | "yellow"
     | "pink"
-    | null;
+    | "purple"
+    | "orange";
 
-export interface BurpItem {
-    time: string;
-    url: string;
-    host: {
-        value: string;
-        ip: string;
-    };
-    port: string;
-    protocol: string;
+export interface BurpRequest {
     method: string;
-    path: string;
-    extension: string;
-    request: {
-        base64: boolean;
-        value: string;
-        decodedValue: string;
-    };
-    status: string;
-    responselength: string;
-    mimetype: string;
-    response: {
-        base64: boolean;
-        value: string;
-        decodedValue: string;
-    };
-    highlight: HighlightColor;
-    comment: string;
+    url: string;
+    protocol?: string;
+    headers: string[];
+    body: string;
+}
+
+export interface BurpResponse {
+    status: number;
+    statusText: string;
+    headers: string[];
+    body: string;
+    mimeType: string;
+    contentLength: number;
+}
+
+export interface BurpEntry {
+    startTime: string;
+    duration: number;
+    request: BurpRequest;
+    response: BurpResponse;
+    highlight?: HighlightColor;
+    comment?: string;
 }
 
 export interface BurpSession {
-    exportTime: string;
-    items: BurpItem[];
+    entries: BurpEntry[];
 }

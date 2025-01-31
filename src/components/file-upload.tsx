@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Upload, PlayCircle } from "lucide-react";
 
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "~/src/lib/hooks/use-toast";
 import { parseBurpXml } from "@/lib/burpParser";
 import { parseHarToSession } from "@/lib/harParser";
 import { BurpSession } from "@/types/burp";
