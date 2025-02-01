@@ -14,7 +14,7 @@ export function ResponseViewer() {
     try {
         const { response } = parser.parse(selectedEntry);
         return (
-            <div className="h-full overflow-auto p-4">
+            <div className="h-full overflow-auto p-2">
                 <CodeBlock language="http" value={response} />
             </div>
         );

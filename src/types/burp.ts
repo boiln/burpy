@@ -32,6 +32,8 @@ export interface BurpEntry {
     response: BurpResponse;
     highlight?: HighlightColor;
     comment?: string;
+    parsedRequest?: string;
+    parsedResponse?: string;
 }
 
 export interface BurpSession {

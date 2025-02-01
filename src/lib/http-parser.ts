@@ -6,6 +6,7 @@ export interface HttpParser<T> {
     parseRequest(raw: T): string;
     parseResponse(raw: T): string;
     validate(raw: unknown): raw is T;
+    parse(raw: T, mimeType?: string): { request: string; response: string };
 }
 
 // Burp parser
@@ -41,7 +42,7 @@ export class BurpParser implements HttpParser<BurpEntry> {
         if (entry.request.body) {
             const decodedBody = this.decodeBase64(entry.request.body);
             if (decodedBody && decodedBody.includes("\r\n")) {
-                return decodedBody;
+                return decodedBody + "\r\n";
             }
         }
 
@@ -50,39 +51,58 @@ export class BurpParser implements HttpParser<BurpEntry> {
             .map((header) => this.decodeBase64(header))
             .join("\r\n");
         const protocol = entry.request.protocol || "HTTP/1.1";
-
-        // Clean up the URL - remove any http(s):// prefix and ensure proper path format
-        let url = entry.request.url;
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            try {
-                const urlObj = new URL(url);
-                url = urlObj.pathname + urlObj.search;
-            } catch (e) {
-                url = url.replace(/^https?:\/\/[^\/]+/, "");
-            }
-        }
-
-        // Ensure the path starts with a forward slash
-        url = url.startsWith("/") ? url : `/${url}`;
-
-        // Construct the request line
+        const url = entry.request.url;
         const requestLine = `${entry.request.method} ${url} ${protocol}`;
+        const body = this.decodeBase64(entry.request.body || "");
 
-        return [requestLine, headers].join("\r\n");
+        return [requestLine, headers, "", body].join("\r\n") + "\r\n";
     }
 
     parseResponse(entry: BurpEntry): string {
+        if (!entry.response || entry.response.status === 0) {
+            return "No response received\r\n";
+        }
+
         const headers = entry.response.headers
             .map((header) => this.decodeBase64(header))
             .join("\r\n");
         const protocol = entry.request.protocol || "HTTP/1.1";
-        const body = this.decodeBase64(entry.response.body);
+        const statusLine = `${protocol} ${entry.response.status} ${entry.response.statusText || ""}`;
+        const body = this.decodeBase64(entry.response.body || "");
 
-        return [`${protocol} ${entry.response.status}`, headers, "", body].join("\r\n");
+        return [statusLine, headers, "", body].join("\r\n") + "\r\n";
     }
 
     validate(raw: unknown): raw is BurpEntry {
-        return Boolean((raw as BurpEntry)?.request?.method && (raw as BurpEntry)?.response?.status);
+        if (!raw || typeof raw !== "object") {
+            return false;
+        }
+
+        const entry = raw as BurpEntry;
+
+        // More specific Burp validation
+        const hasValidRequest =
+            entry.request &&
+            typeof entry.request === "object" &&
+            typeof entry.request.method === "string" &&
+            typeof entry.request.url === "string" &&
+            Array.isArray(entry.request.headers);
+
+        const hasValidResponse =
+            !entry.response ||
+            (typeof entry.response === "object" &&
+                typeof entry.response.status === "number" &&
+                Array.isArray(entry.response.headers) &&
+                typeof entry.response.body === "string");
+
+        return Boolean(hasValidRequest && hasValidResponse);
+    }
+
+    parse(entry: BurpEntry): { request: string; response: string } {
+        return {
+            request: this.parseRequest(entry),
+            response: this.parseResponse(entry),
+        };
     }
 
     static parseXmlItem(raw: string): BurpEntry {
@@ -99,6 +119,10 @@ export class BurpParser implements HttpParser<BurpEntry> {
             const requestHeaders = getElementContent("requestheaders");
             const responseHeaders = getElementContent("responseheaders");
 
+            // Parse status with a default of 0 for empty/invalid values
+            const statusText = getElementContent("status");
+            const status = statusText ? parseInt(statusText, 10) : 0;
+
             return {
                 startTime: new Date().toISOString(),
                 duration: 0,
@@ -110,8 +134,8 @@ export class BurpParser implements HttpParser<BurpEntry> {
                     body: rawRequest || "",
                 },
                 response: {
-                    status: parseInt(getElementContent("status"), 10),
-                    statusText: getElementContent("statustext"),
+                    status: isNaN(status) ? 0 : status, // Ensure we never return NaN
+                    statusText: getElementContent("statustext") || "No response",
                     headers: responseHeaders ? [responseHeaders] : [],
                     body: rawResponse || "",
                     mimeType: getElementContent("mimetype") || "text/plain",
@@ -130,32 +154,58 @@ export class BurpParser implements HttpParser<BurpEntry> {
 
 export class HarParser implements HttpParser<HarEntry> {
     parseRequest(entry: HarEntry): string {
+        const requestLine = `${entry.request.method} ${entry.request.url} ${entry.request.httpVersion}`;
         const headers = entry.request.headers.map((h) => `${h.name}: ${h.value}`).join("\r\n");
-        const protocol = entry.request.httpVersion;
+        const body = entry.request.postData?.text || "";
 
-        return [
-            `${entry.request.method} ${entry.request.url} ${protocol}`,
-            headers,
-            "",
-            entry.request.postData?.text || "",
-        ].join("\r\n");
+        return [requestLine, headers, "", body].join("\r\n") + "\r\n";
     }
 
     parseResponse(entry: HarEntry): string {
-        const headers = entry.response.headers.map((h) => `${h.name}: ${h.value}`).join("\r\n");
-        const protocol = entry.response.httpVersion;
+        if (!entry.response || entry.response.status === 0) {
+            return "No response received\r\n";
+        }
 
-        return [
-            `${protocol} ${entry.response.statusText}`,
-            `Content-Length: ${entry.response.contentLength.toString()}`,
-            headers,
-            "",
-            entry.response.content.text || "",
-        ].join("\r\n");
+        // Construct the response parts
+        const statusLine = `${entry.response.httpVersion} ${entry.response.statusText}`;
+        const headers = entry.response.headers.map((h) => `${h.name}: ${h.value}`).join("\r\n");
+        const body = entry.response.content?.text || "";
+
+        return [statusLine, headers, "", body].join("\r\n") + "\r\n";
     }
 
     validate(raw: unknown): raw is HarEntry {
-        return Boolean((raw as HarEntry)?.request?.method && (raw as HarEntry)?.response?.status);
+        if (!raw || typeof raw !== "object") {
+            return false;
+        }
+
+        const entry = raw as HarEntry;
+
+        // More specific HAR validation
+        const hasValidRequest =
+            entry.request &&
+            typeof entry.request === "object" &&
+            typeof entry.request.method === "string" &&
+            typeof entry.request.url === "string" &&
+            Array.isArray(entry.request.headers) &&
+            "httpVersion" in entry.request; // HAR-specific
+
+        const hasValidResponse =
+            entry.response &&
+            typeof entry.response === "object" &&
+            typeof entry.response.status === "number" &&
+            Array.isArray(entry.response.headers) &&
+            "content" in entry.response && // HAR-specific
+            typeof entry.response.content === "object";
+
+        return Boolean(hasValidRequest && hasValidResponse);
+    }
+
+    parse(entry: HarEntry): { request: string; response: string } {
+        return {
+            request: this.parseRequest(entry),
+            response: this.parseResponse(entry),
+        };
     }
 }
 
@@ -171,20 +221,16 @@ export class HttpMessageParser {
         if (mimeType && this.parsers.has(mimeType)) {
             const parser = this.parsers.get(mimeType)!;
             if (parser.validate(input)) {
-                return {
-                    request: parser.parseRequest(input),
-                    response: parser.parseResponse(input),
-                };
+                console.debug(`Using parser for ${mimeType}`);
+                return parser.parse(input);
             }
         }
 
         // Fallback to auto-detection
-        for (const parser of this.parsers.values()) {
+        for (const [type, parser] of this.parsers.entries()) {
             if (parser.validate(input)) {
-                return {
-                    request: parser.parseRequest(input),
-                    response: parser.parseResponse(input),
-                };
+                console.debug(`Auto-detected parser: ${type}`);
+                return parser.parse(input);
             }
         }
 
@@ -211,7 +257,7 @@ export class HttpMessageParser {
 // Utility function to create default parser with registered formats
 export function createDefaultParser() {
     const parser = new HttpMessageParser();
-    parser.registerParser("application/vnd.burp.suite.item", new BurpParser());
     parser.registerParser("application/har+json", new HarParser());
+    parser.registerParser("application/vnd.burp.suite.item", new BurpParser());
     return parser;
 }

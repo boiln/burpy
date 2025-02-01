@@ -1,6 +1,7 @@
 "use client";
 
-import { BurpSession } from "@/types/burp";
+import { BurpSession, BurpEntry } from "@/types/burp";
+import { HarSession, HarEntry, HarResponse } from "@/types/har";
 import {
     Table,
     TableBody,
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session-context";
 
 interface RequestTableProps {
-    session: BurpSession | null;
+    session: BurpSession | HarSession | null;
 }
 
 type RequestData = {
@@ -40,6 +41,35 @@ type RequestData = {
     time: string;
     entry: any;
 };
+
+// Type guard to check if session is HarSession
+function isHarSession(session: BurpSession | HarSession): session is HarSession {
+    if (!session?.entries?.[0]) return false;
+
+    const entry = session.entries[0];
+    // Check for HAR-specific structure
+    return (
+        "request" in entry &&
+        "httpVersion" in entry.request &&
+        "response" in entry &&
+        typeof entry.response === "object" &&
+        "content" in (entry.response || {})
+    );
+}
+
+// Type guard to check if response is HAR response
+function isHarResponse(response: any): response is HarResponse {
+    return "content" in response && "headers" in response;
+}
+
+function getEntryTime(entry: BurpEntry | HarEntry): string {
+    const timestamp = "startTime" in entry ? entry.startTime : entry.startedDateTime;
+    return timestamp ? new Date(timestamp).toLocaleTimeString() : "-";
+}
+
+function getEntryId(entry: BurpEntry | HarEntry): string {
+    return "startTime" in entry ? entry.startTime : entry.startedDateTime;
+}
 
 const columns: ColumnDef<RequestData>[] = [
     {
@@ -195,7 +225,7 @@ const columns: ColumnDef<RequestData>[] = [
             );
         },
         cell: ({ row }) => (
-            <div className="whitespace-nowrap font-mono">{row.getValue("time")}</div>
+            <div className="whitespace-nowrap font-mono">{getEntryTime(row.original.entry)}</div>
         ),
         size: 150,
     },
@@ -206,16 +236,19 @@ export function RequestTable({ session }: RequestTableProps) {
     const { handleSelectEntry } = useSession();
 
     const data = useMemo(() => {
-        if (!session) return [];
+        if (!session?.entries) return [];
 
-        return session.entries.map((entry, index) => {
+        return session.entries.map((entry: BurpEntry | HarEntry, index) => {
             try {
                 let host = "";
                 let pathname = "";
                 let search = "";
+                let url = isHarSession(session)
+                    ? entry.request.url
+                    : (entry as BurpEntry).request.url;
 
                 // Validate required fields
-                if (!entry.request?.url) {
+                if (!url) {
                     console.warn(`Missing URL for entry ${index}`);
                     return {
                         id: `error-${index}`,
@@ -225,46 +258,58 @@ export function RequestTable({ session }: RequestTableProps) {
                         url: "/",
                         status: entry.response?.status || 0,
                         statusText: entry.response?.statusText || "",
-                        mimeType: entry.response?.mimeType || "unknown",
-                        length: entry.response?.contentLength || 0,
-                        time: entry.startTime
-                            ? new Date(entry.startTime).toLocaleTimeString()
-                            : "-",
+                        mimeType: "unknown",
+                        length: 0,
+                        time: getEntryTime(entry),
                         entry,
                     };
                 }
 
                 // Parse URL
                 try {
-                    const url = new URL(entry.request.url);
-                    host = url.host;
-                    pathname = url.pathname;
-                    search = url.search;
+                    const urlObj = new URL(url);
+                    host = urlObj.host;
+                    pathname = urlObj.pathname;
+                    search = urlObj.search;
                 } catch (urlError) {
                     // Handle invalid URLs gracefully
-                    console.warn(`Invalid URL format for entry ${index}: ${entry.request.url}`);
-                    const urlParts = entry.request.url.split("/");
+                    console.warn(`Invalid URL format for entry ${index}: ${url}`);
+                    const urlParts = url.split("/");
                     if (urlParts.length >= 3) {
                         host = urlParts[2];
                         pathname = "/" + urlParts.slice(3).join("/");
                     } else {
-                        host = entry.request.url;
+                        host = url;
                         pathname = "/";
                     }
                 }
 
-                // Create table row data with null checks
+                // Get MIME type and content length based on entry type
+                let mimeType = "unknown";
+                let contentLength = 0;
+
+                if (entry.response && isHarResponse(entry.response)) {
+                    // HAR entry
+                    mimeType = entry.response.content.mimeType || "unknown";
+                    contentLength =
+                        entry.response.contentLength || entry.response.content.text?.length || 0;
+                } else if (entry.response) {
+                    // Burp entry
+                    mimeType = entry.response.mimeType;
+                    contentLength = entry.response.contentLength;
+                }
+
                 return {
-                    id: `${entry.startTime || "unknown"}-${index}`,
+                    id: `${getEntryId(entry) || "unknown"}-${index}`,
                     index: index + 1,
                     host,
                     method: entry.request?.method || "UNKNOWN",
                     url: pathname + search,
                     status: entry.response?.status || 0,
                     statusText: entry.response?.statusText || "",
-                    mimeType: entry.response?.mimeType || "unknown",
-                    length: entry.response?.contentLength || 0,
-                    time: entry.startTime ? new Date(entry.startTime).toLocaleTimeString() : "-",
+                    mimeType,
+                    length: contentLength,
+                    time: getEntryTime(entry),
                     entry,
                 };
             } catch (error) {

@@ -2,13 +2,13 @@
 
 import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Upload } from "lucide-react";
-import { BurpSession, BurpEntry } from "@/types/burp";
-import { HarEntry, HarHeader } from "@/types/har";
+import { BurpSession } from "@/types/burp";
+import { HarEntry, HarSession } from "@/types/har";
 import { cn } from "@/lib/utils";
-import { BurpParser } from "@/lib/http-parser";
+import { BurpParser, createDefaultParser } from "@/lib/http-parser";
 
 interface FileUploadProps {
-    onSessionLoaded: (session: BurpSession) => void;
+    onSessionLoaded: (session: BurpSession | HarSession) => void;
 }
 
 export interface FileUploadRef {
@@ -18,6 +18,7 @@ export interface FileUploadRef {
 const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded }, ref) => {
     const [loading, setLoading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const validateHarData = (data: any): data is { log: { entries: HarEntry[] } } => {
         try {
@@ -60,12 +61,13 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
         if (!file) return;
 
         setLoading(true);
+        setError(null);
         try {
             console.log(`Reading ${file.name}...`);
 
             // Validate file size
-            if (file.size > 50 * 1024 * 1024) {
-                throw new Error("File size exceeds 50MB limit");
+            if (file.size > 250 * 1024 * 1024) {
+                throw new Error("File size exceeds 250MB limit");
             }
 
             // Validate file extension
@@ -75,63 +77,75 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
             }
 
             const text = await file.text();
-            let entries: BurpEntry[] = [];
+            const parser = createDefaultParser();
 
             if (fileExtension === "har") {
-                console.log("Parsing HAR file...");
                 const harData = JSON.parse(text);
 
                 if (!validateHarData(harData)) {
                     throw new Error("Invalid HAR file format");
                 }
 
-                entries = harData.log.entries.map((entry: HarEntry) => ({
-                    startTime: entry.startedDateTime || new Date().toISOString(),
-                    duration: entry.time || 0,
-                    request: {
-                        method: entry.request.method,
-                        url: entry.request.url,
-                        protocol: entry.request.httpVersion || "HTTP/1.1",
-                        headers:
-                            entry.request.headers?.map((h: HarHeader) => `${h.name}: ${h.value}`) ||
-                            [],
-                        body: entry.request.postData?.text || "",
-                    },
-                    response: {
-                        status: entry.response.status,
-                        statusText: entry.response.statusText || "",
-                        headers:
-                            entry.response.headers?.map(
-                                (h: HarHeader) => `${h.name}: ${h.value}`
-                            ) || [],
-                        body: entry.response.content?.text || "",
-                        mimeType: entry.response.content?.mimeType || "text/plain",
-                        contentLength: entry.response.content?.text?.length || 0,
-                    },
-                }));
+                // Use the parser to validate and process each entry
+                const entries = harData.log.entries.map((entry) => {
+                    try {
+                        const { request, response } = parser.parse(entry, "application/har+json");
+                        return {
+                            ...entry,
+                            parsedRequest: request,
+                            parsedResponse: response,
+                        };
+                    } catch (parseError) {
+                        console.error("Failed to parse HAR entry:", parseError);
+                        throw parseError;
+                    }
+                });
+
+                const session: HarSession = { entries };
+                onSessionLoaded(session);
             } else {
-                console.log("Parsing Burp XML file...");
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, "text/xml");
+                const xmlParser = new DOMParser();
+                const doc = xmlParser.parseFromString(text, "text/xml");
                 const items = doc.querySelectorAll("item");
-                entries = Array.from(items).map((item) => BurpParser.parseXmlItem(item.outerHTML));
-            }
 
-            if (!entries || entries.length === 0) {
-                throw new Error("No valid entries found in the file");
-            }
+                if (!items || items.length === 0) {
+                    throw new Error("No items found in Burp XML file");
+                }
 
-            const session: BurpSession = { entries };
-            console.log("Session loaded:", entries.length, "items");
-            onSessionLoaded(session);
-            console.log(
-                `Loaded ${entries.length} items from ${fileExtension.toUpperCase()} session`
+                // Use the parser to validate and process each entry
+                const entries = Array.from(items).map((item, index) => {
+                    try {
+                        const burpEntry = BurpParser.parseXmlItem(item.outerHTML);
+
+                        const { request, response } = parser.parse(
+                            burpEntry,
+                            "application/vnd.burp.suite.item"
+                        );
+                        return {
+                            ...burpEntry,
+                            parsedRequest: request,
+                            parsedResponse: response,
+                        };
+                    } catch (parseError) {
+                        console.error(`Failed to parse Burp item ${index + 1}:`, parseError);
+                        throw parseError;
+                    }
+                });
+
+                if (!entries || entries.length === 0) {
+                    throw new Error("No valid entries found in the file");
+                }
+
+                const session: BurpSession = { entries };
+                onSessionLoaded(session);
+            }
+        } catch (error) {
+            console.error("Error processing file:", error);
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to process file. Check console for details."
             );
-        } catch (error: unknown) {
-            console.error("Error parsing session file:", error);
-            const errorMessage =
-                error instanceof Error ? error.message : "Failed to parse session file";
-            console.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -170,16 +184,16 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
 
     const loadDemoFile = async () => {
         setLoading(true);
+        setError(null);
         try {
-            console.log("Fetching demo file...");
             const response = await fetch("/demo.har");
             if (!response.ok) {
                 throw new Error(`Failed to load demo file: ${response.statusText}`);
             }
 
             const text = await response.text();
-            console.log("Parsing demo file...");
             let harData;
+            const parser = createDefaultParser();
 
             try {
                 harData = JSON.parse(text);
@@ -188,54 +202,29 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                 throw new Error("Failed to parse demo file: Invalid JSON");
             }
 
-            console.log("Validating HAR data structure...");
             if (!validateHarData(harData)) {
                 throw new Error("Invalid HAR file format in demo file");
             }
 
-            console.log("Creating parser...");
-            console.log("Processing entries...");
-            const entries = harData.log.entries.map((entry: HarEntry) => {
+            // Use the parser to validate and process each entry
+            const entries = harData.log.entries.map((entry) => {
+                const { request, response } = parser.parse(entry, "application/har+json");
                 return {
-                    startTime: entry.startedDateTime || new Date().toISOString(),
-                    duration: entry.time || 0,
-                    request: {
-                        method: entry.request.method,
-                        url: entry.request.url,
-                        protocol: entry.request.httpVersion || "HTTP/1.1",
-                        headers:
-                            entry.request.headers?.map((h: HarHeader) => `${h.name}: ${h.value}`) ||
-                            [],
-                        body: entry.request.postData?.text || "",
-                    },
-                    response: {
-                        status: entry.response.status,
-                        statusText: entry.response.statusText || "",
-                        headers:
-                            entry.response.headers?.map(
-                                (h: HarHeader) => `${h.name}: ${h.value}`
-                            ) || [],
-                        body: entry.response.content?.text || "",
-                        mimeType: entry.response.content?.mimeType || "text/plain",
-                        contentLength: entry.response.content?.text?.length || 0,
-                    },
+                    ...entry,
+                    parsedRequest: request,
+                    parsedResponse: response,
                 };
             });
 
-            if (!entries || entries.length === 0) {
-                throw new Error("No valid entries found in the demo file");
-            }
-
-            const session: BurpSession = { entries };
-            console.log(`Successfully loaded demo session with ${entries.length} items`);
+            const session: HarSession = { entries };
             onSessionLoaded(session);
         } catch (error) {
             console.error("Error details:", error);
-            const errorMessage =
+            setError(
                 error instanceof Error
                     ? error.message
-                    : "An unexpected error occurred while loading the demo file";
-            console.error("Demo file loading error:", errorMessage);
+                    : "An unexpected error occurred while loading the demo file"
+            );
         } finally {
             setLoading(false);
         }
@@ -246,7 +235,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
     }));
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
             <div
                 className={cn(
                     "flex h-9 items-center gap-2 rounded-md border px-3 text-sm transition-colors",
@@ -271,6 +260,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                     disabled={loading}
                 />
             </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
 });

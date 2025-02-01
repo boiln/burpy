@@ -7,6 +7,11 @@ const detectPayloadFormat = (str: string): string => {
     // Remove leading/trailing whitespace
     const trimmed = str.trim();
 
+    // HAR detection
+    if (/^{\s*"log"\s*:/.test(trimmed)) {
+        return "json"; // HAR files are JSON with specific structure
+    }
+
     // JSON detection - strict check for objects and arrays
     if (/^[{\[][\s\S]*[}\]]$/.test(trimmed)) {
         try {
@@ -55,7 +60,21 @@ const detectPayloadFormat = (str: string): string => {
 const formatJSON = (str: string): string => {
     try {
         const obj = JSON.parse(str);
-        return JSON.stringify(obj, null, 4);
+
+        // Special handling for HAR files to ensure proper formatting
+        if (obj.log && Array.isArray(obj.log.entries)) {
+            // Optionally limit the number of entries shown to prevent performance issues
+            const limitedObj = {
+                ...obj,
+                log: {
+                    ...obj.log,
+                    entries: obj.log.entries.slice(0, 100), // Limit to first 100 entries
+                },
+            };
+            return JSON.stringify(limitedObj, null, 4);
+        }
+
+        return JSON.stringify(obj, null, 2);
     } catch (e) {
         return str;
     }
@@ -74,7 +93,13 @@ const highlightPayload = (payload: string): string => {
 
     try {
         if (format === "json") {
-            return Prism.highlight(formatJSON(payload), Prism.languages.json, "json");
+            const formatted = formatJSON(payload);
+            // Add a size check to prevent performance issues with very large payloads
+            if (formatted.length > 1000000) {
+                // 1MB limit
+                return `// Large JSON payload truncated for performance\n${formatted.slice(0, 1000000)}...`;
+            }
+            return Prism.highlight(formatted, Prism.languages.json, "json");
         }
         return Prism.highlight(payload, Prism.languages[format], format);
     } catch (e) {
@@ -117,17 +142,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
             }
 
             // Combine highlighted parts with proper spacing and structure
-            ref.current.innerHTML = `
-                <div class="space-y-2">
-                    <div class="font-medium">${highlightedFirstLine}</div>
-                    ${
-                        highlightedHeaders
-                            ? `<div class="text-sm text-muted-foreground">${highlightedHeaders}</div>`
-                            : ""
-                    }
-                    ${body ? `<div class="">${highlightedBody}</div>` : ""}
-                </div>
-            `.trim();
+            ref.current.innerHTML = `${highlightedFirstLine}\n\n${highlightedHeaders}\n\n${highlightedBody}`;
         }
     }, [value, language]);
 

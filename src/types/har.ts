@@ -43,10 +43,10 @@ export interface HarEntry {
     response: HarResponse;
     highlight?: HighlightColor;
     comment?: string;
+    parsedRequest?: string;
+    parsedResponse?: string;
 }
 
 export interface HarSession {
-    id: string;
-    name: string;
     entries: HarEntry[];
 }
