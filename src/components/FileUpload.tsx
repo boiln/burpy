@@ -59,7 +59,7 @@ export function FileUpload({ onSessionLoaded }: FileUploadProps) {
             console.log(`Reading ${file.name}...`);
 
             // Validate file size
-            if (file.size > 50 * 1024 * 1024) {
+            if (file.size > 900 * 1024 * 1024) {
                 // 50MB limit
                 throw new Error("File size exceeds 50MB limit");
             }
