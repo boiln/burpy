@@ -22,7 +22,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Burpy",
-    description: "HTTP requests viewer",
+    description: "HTTP request viewer",
     icons: {
         icon: "favicon.ico",
     },
