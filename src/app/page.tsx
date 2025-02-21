@@ -26,7 +26,7 @@ export default function Home() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex h-screen flex-col">
             {/* Header with file upload */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="flex h-16 items-center px-4">
@@ -42,11 +42,8 @@ export default function Home() {
             </div>
 
             {/* Main content */}
-            <div className="flex-1">
-                <ResizablePanelGroup
-                    direction="vertical"
-                    className="min-h-[calc(100vh-4rem)] rounded-lg border"
-                >
+            <div className="flex-1 overflow-hidden">
+                <ResizablePanelGroup direction="vertical" className="h-full rounded-lg border">
                     <ResizablePanel defaultSize={35} minSize={30}>
                         <div className="h-full p-3">
                             <RequestTable session={session} />
@@ -59,9 +56,7 @@ export default function Home() {
                         <ResizablePanelGroup direction="horizontal">
                             <ResizablePanel defaultSize={50}>
                                 <div className="h-full overflow-hidden">
-                                    <div className="h-full">
-                                        <RequestViewer />
-                                    </div>
+                                    <RequestViewer />
                                 </div>
                             </ResizablePanel>
 
@@ -69,9 +64,7 @@ export default function Home() {
 
                             <ResizablePanel defaultSize={50}>
                                 <div className="h-full overflow-hidden">
-                                    <div className="h-full">
-                                        <ResponseViewer />
-                                    </div>
+                                    <ResponseViewer />
                                 </div>
                             </ResizablePanel>
                         </ResizablePanelGroup>

@@ -1,7 +1,6 @@
 import type { BurpEntry } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
 
-// base interface for http msg parsers
 export interface HttpParser<T> {
     parseRequest(raw: T): string;
     parseResponse(raw: T): string;
@@ -34,7 +33,6 @@ export class BurpParser implements HttpParser<BurpEntry> {
     }
 
     parseRequest(entry: BurpEntry): string {
-        // use raw request body if available
         if (entry.request.body) {
             const decodedBody = this.decodeBase64(entry.request.body);
             if (decodedBody && decodedBody.includes("\r\n")) {

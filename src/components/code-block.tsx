@@ -234,7 +234,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
                     onClick={() => setIsBeautified(!isBeautified)}
                     title="Beautify"
                 >
-                    <div className="flex items-center text-[11px] font-medium">{"{ }"}</div>
+                    <div className="flex items-center text-[11px]">{"{ }"}</div>
                 </Button>
             </div>
             <pre

@@ -18,11 +18,12 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table";
-import { useState, useMemo } from "react";
-import { ArrowUpDown } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ArrowUpDown, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session-context";
+import { RequestContextMenu } from "@/components/request-context-menu";
 
 interface RequestTableProps {
     session: BurpSession | HarSession | null;
@@ -75,164 +76,182 @@ const columns: ColumnDef<RequestData>[] = [
         accessorKey: "index",
         header: ({ column }) => {
             return (
-                <div className="w-16 text-right">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        #
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    #
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => <div className="font-mono">{row.getValue("index")}</div>,
-        size: 50,
+        size: 40,
+        minSize: 35,
+        maxSize: 50,
     },
     {
         accessorKey: "host",
         header: ({ column }) => {
             return (
-                <div className="w-[200px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Host
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Host
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => <div className="truncate font-mono">{row.getValue("host")}</div>,
-        size: 250,
+        size: 220,
+        minSize: 120,
+        maxSize: 300,
     },
     {
         accessorKey: "method",
         header: ({ column }) => {
             return (
-                <div className="w-[100px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Method
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Method
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => <div className="font-mono">{row.getValue("method")}</div>,
-        size: 100,
+        size: 85,
+        minSize: 60,
+        maxSize: 100,
     },
     {
         accessorKey: "url",
         header: ({ column }) => {
             return (
-                <div className="w-[400px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Path
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Path
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
-        cell: ({ row }) => <div className="truncate font-mono text-xs">{row.getValue("url")}</div>,
-        size: 450,
+        cell: ({ row }) => (
+            <div className="flex items-center justify-between gap-1 font-mono">
+                <span className="truncate">{row.getValue("url")}</span>
+                {row.original.entry.comment && (
+                    <div className="flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5">
+                        <MessageSquare className="h-3 w-3" />
+                        <span>{row.original.entry.comment}</span>
+                    </div>
+                )}
+            </div>
+        ),
+        size: 420,
+        minSize: 200,
+        maxSize: 600,
     },
     {
         accessorKey: "status",
         header: ({ column }) => {
             return (
-                <div className="w-[100px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Status
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Status
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => {
             const status = row.getValue("status") as number;
             return <div className={cn("font-mono font-medium", status)}>{status}</div>;
         },
-        size: 85,
+        size: 80,
+        minSize: 50,
+        maxSize: 90,
     },
     {
         accessorKey: "mimeType",
         header: ({ column }) => {
             return (
-                <div className="w-[150px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        MIME Type
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    MIME Type
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
-        cell: ({ row }) => <div className="font-mono text-xs">{row.getValue("mimeType")}</div>,
-        size: 180,
+        cell: ({ row }) => <div className="truncate font-mono">{row.getValue("mimeType")}</div>,
+        size: 175,
+        minSize: 150,
+        maxSize: 225,
     },
     {
         accessorKey: "length",
         header: ({ column }) => {
             return (
-                <div className="w-[100px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Length
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Length
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => <div className="font-mono">{row.getValue("length")}</div>,
-        size: 95,
+        size: 70,
+        minSize: 90,
+        maxSize: 100,
     },
     {
         accessorKey: "time",
         header: ({ column }) => {
             return (
-                <div className="w-[120px]">
-                    <Button
-                        variant="ghost"
-                        className="group flex items-center gap-1 p-0 hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Time
-                        <ArrowUpDown className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="group p-0 font-mono hover:bg-transparent"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Time
+                    <ArrowUpDown className="ml-1 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
             );
         },
         cell: ({ row }) => (
             <div className="whitespace-nowrap font-mono">{getEntryTime(row.original.entry)}</div>
         ),
-        size: 150,
+        size: 90,
+        minSize: 70,
+        maxSize: 120,
     },
 ];
 
 export function RequestTable({ session }: RequestTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const { handleSelectEntry } = useSession();
+    const [updateKey, setUpdateKey] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setUpdateKey((k) => k + 1);
+        }, 100);
+        return () => clearInterval(interval);
+    }, []);
 
     const data = useMemo(() => {
         if (!session?.entries) return [];
@@ -343,7 +362,7 @@ export function RequestTable({ session }: RequestTableProps) {
 
     if (!session) {
         return (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-muted-foreground">
                 No session loaded
             </div>
         );
@@ -352,15 +371,15 @@ export function RequestTable({ session }: RequestTableProps) {
     return (
         <div className="flex h-full flex-col">
             {/* Fixed Header Table */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <Table>
-                    <TableHeader>
+            <div className="border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="overflow-hidden">
+                    <div className="flex">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="flex">
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
-                                        className="h-10 flex-shrink-0"
+                                        className="h-7 flex-shrink-0"
                                         style={{
                                             width: header.column.getSize(),
                                             minWidth: header.column.columnDef.minSize,
@@ -377,61 +396,85 @@ export function RequestTable({ session }: RequestTableProps) {
                                 ))}
                             </TableRow>
                         ))}
-                    </TableHeader>
-                </Table>
+                    </div>
+                </div>
             </div>
 
             {/* Scrollable Content Table */}
             <div className="flex-1 overflow-auto">
-                <Table>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                    className={cn(
-                                        "flex cursor-pointer hover:bg-accent",
-                                        row.getIsSelected() && "bg-accent"
-                                    )}
-                                    onClick={() => handleSelectEntry(row.original.entry)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            handleSelectEntry(row.original.entry);
-                                        }
-                                    }}
-                                    tabIndex={0}
-                                    role="row"
-                                    aria-selected={row.getIsSelected()}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            className="flex-shrink-0"
-                                            style={{
-                                                width: cell.column.getSize(),
-                                                minWidth: cell.column.columnDef.minSize,
-                                                maxWidth: cell.column.columnDef.maxSize,
-                                            }}
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
+                <div className="min-w-max">
+                    <Table>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <RequestContextMenu key={row.id} entry={row.original.entry}>
+                                        <TableRow
+                                            data-state={row.getIsSelected() && "selected"}
+                                            className={cn(
+                                                "flex cursor-pointer hover:bg-accent",
+                                                row.getIsSelected() && "bg-accent",
+                                                {
+                                                    "bg-red-500/10":
+                                                        row.original.entry.highlight === "red",
+                                                    "bg-orange-500/10":
+                                                        row.original.entry.highlight === "orange",
+                                                    "bg-yellow-500/10":
+                                                        row.original.entry.highlight === "yellow",
+                                                    "bg-green-500/10":
+                                                        row.original.entry.highlight === "green",
+                                                    "bg-cyan-500/10":
+                                                        row.original.entry.highlight === "cyan",
+                                                    "bg-blue-500/10":
+                                                        row.original.entry.highlight === "blue",
+                                                    "bg-purple-500/10":
+                                                        row.original.entry.highlight === "purple",
+                                                    "bg-pink-500/10":
+                                                        row.original.entry.highlight === "pink",
+                                                }
                                             )}
-                                        </TableCell>
-                                    ))}
+                                            onClick={() => handleSelectEntry(row.original.entry)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault();
+                                                    handleSelectEntry(row.original.entry);
+                                                }
+                                            }}
+                                            tabIndex={0}
+                                            role="row"
+                                            aria-selected={row.getIsSelected()}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell
+                                                    key={cell.id}
+                                                    className="flex-shrink-0"
+                                                    style={{
+                                                        width: cell.column.getSize(),
+                                                        minWidth: cell.column.columnDef.minSize,
+                                                        maxWidth: cell.column.columnDef.maxSize,
+                                                    }}
+                                                >
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </RequestContextMenu>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="h-24 text-center"
+                                    >
+                                        No results.
+                                    </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );
