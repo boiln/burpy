@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { BurpEntry } from "@/types/burp";
 import { HarEntry } from "@/types/har";
 import type { HighlightColor } from "@/types/burp";
@@ -20,10 +20,15 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionContextProvider({ children }: { children: ReactNode }) {
+    const [isClient, setIsClient] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
     const [selectedEntries, setSelectedEntries] = useState<Set<BurpEntry | HarEntry>>(new Set());
     const [lastSelectedEntry, setLastSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
     const [, setForceUpdate] = useState({});
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const handleSelectEntry = (entry: BurpEntry | HarEntry) => {
         setSelectedEntry(entry);
@@ -101,8 +106,8 @@ export function SessionContextProvider({ children }: { children: ReactNode }) {
     return (
         <SessionContext.Provider
             value={{
-                selectedEntry,
-                selectedEntries,
+                selectedEntry: isClient ? selectedEntry : null,
+                selectedEntries: isClient ? selectedEntries : new Set(),
                 handleSelectEntry,
                 handleMultiSelectEntry,
                 handleHighlightEntry,
@@ -116,6 +121,16 @@ export function SessionContextProvider({ children }: { children: ReactNode }) {
 
 export function useSession() {
     const context = useContext(SessionContext);
+    if (typeof window === "undefined") {
+        return {
+            selectedEntry: null,
+            selectedEntries: new Set(),
+            handleSelectEntry: () => {},
+            handleMultiSelectEntry: () => {},
+            handleHighlightEntry: () => {},
+            handleCommentEntry: () => {},
+        };
+    }
     if (context === undefined) {
         throw new Error("useSession must be used within a SessionContextProvider");
     }
