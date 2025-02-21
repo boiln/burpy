@@ -166,6 +166,17 @@ export function CodeBlock({ language, value }: { language: string; value: string
         body: string;
     }>({ firstLine: "", headers: "", body: "" });
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLPreElement>) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+            e.preventDefault();
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(e.currentTarget);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+        }
+    };
+
     useEffect(() => {
         const updateContent = async () => {
             const parts = value.split("\r\n\r\n");
@@ -243,6 +254,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
                     isWrapped && "whitespace-pre-wrap break-words"
                 )}
                 tabIndex={0}
+                onKeyDown={handleKeyDown}
                 style={{
                     wordBreak: isWrapped ? "break-word" : "normal",
                     whiteSpace: isWrapped ? "pre-wrap" : "pre",
@@ -259,15 +271,15 @@ export function CodeBlock({ language, value }: { language: string; value: string
                     }}
                 >
                     <PrismHighlight code={formattedContent.firstLine} language={language} />
+                    <div className="my-2 border-b border-border/40" />
                     {formattedContent.headers && (
                         <>
-                            <br />
                             <PrismHighlight code={formattedContent.headers} language={language} />
                         </>
                     )}
                     {formattedContent.body && (
                         <>
-                            <br />
+                            <div className="my-2 border-b border-border/40" />
                             <PrismHighlight
                                 code={formattedContent.body}
                                 language={detectPayloadFormat(formattedContent.body)}

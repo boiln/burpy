@@ -18,7 +18,7 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ArrowUpDown, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -154,7 +154,7 @@ const columns: ColumnDef<RequestData>[] = [
                 )}
             </div>
         ),
-        size: 420,
+        size: 500,
         minSize: 200,
         maxSize: 600,
     },
@@ -243,8 +243,10 @@ const columns: ColumnDef<RequestData>[] = [
 
 export function RequestTable({ session }: RequestTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
-    const { handleSelectEntry } = useSession();
+    const { handleSelectEntry, selectedEntry, handleMultiSelectEntry, selectedEntries } =
+        useSession();
     const [updateKey, setUpdateKey] = useState(0);
+    const tableRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -252,6 +254,70 @@ export function RequestTable({ session }: RequestTableProps) {
         }, 100);
         return () => clearInterval(interval);
     }, []);
+
+    const handleRowClick = (e: React.MouseEvent, entry: BurpEntry | HarEntry) => {
+        // Prevent text selection during click operations
+        e.preventDefault();
+
+        if (e.ctrlKey || e.metaKey) {
+            handleMultiSelectEntry(entry, "ctrl");
+        } else if (e.shiftKey) {
+            if (session?.entries) {
+                const entries = session.entries as (BurpEntry | HarEntry)[];
+                const currentIndex = entries.findIndex((e) => e === entry);
+                const lastSelectedIndex = entries.findIndex((e) => e === selectedEntry);
+
+                if (lastSelectedIndex !== -1) {
+                    const start = Math.min(currentIndex, lastSelectedIndex);
+                    const end = Math.max(currentIndex, lastSelectedIndex);
+                    const rangeEntries = entries.slice(start, end + 1);
+
+                    // Clear existing selection and add the range
+                    selectedEntries.clear();
+                    rangeEntries.forEach((e) => selectedEntries.add(e));
+
+                    // Update the last selected entry for future range selections
+                    handleMultiSelectEntry(entry, "shift");
+                }
+            }
+        } else {
+            handleMultiSelectEntry(entry, "single");
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!session?.entries || !selectedEntry) return;
+
+        const entries = session.entries as (BurpEntry | HarEntry)[];
+        const currentIndex = entries.findIndex((e) => e === selectedEntry);
+        if (currentIndex === -1) return;
+
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+            const nextIndex =
+                e.key === "ArrowUp"
+                    ? Math.max(0, currentIndex - 1)
+                    : Math.min(entries.length - 1, currentIndex + 1);
+
+            const nextEntry = entries[nextIndex];
+            if (nextEntry) {
+                if (e.shiftKey) {
+                    handleMultiSelectEntry(nextEntry, "shift");
+                    if (e.key === "ArrowUp") {
+                        selectedEntries.add(nextEntry);
+                    } else {
+                        const lastEntry = entries[currentIndex];
+                        if (lastEntry) selectedEntries.delete(lastEntry);
+                    }
+                } else {
+                    handleMultiSelectEntry(nextEntry, "single");
+                }
+
+                const row = tableRef.current?.querySelector(`[data-row-index="${nextIndex}"]`);
+                row?.scrollIntoView({ block: "nearest" });
+            }
+        }
+    };
 
     const data = useMemo(() => {
         if (!session?.entries) return [];
@@ -373,75 +439,74 @@ export function RequestTable({ session }: RequestTableProps) {
             {/* Fixed Header Table */}
             <div className="border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="overflow-hidden">
-                    <div className="flex">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="flex">
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        className="h-7 flex-shrink-0"
-                                        style={{
-                                            width: header.column.getSize(),
-                                            minWidth: header.column.columnDef.minSize,
-                                            maxWidth: header.column.columnDef.maxSize,
-                                        }}
-                                    >
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef.header,
-                                                  header.getContext()
-                                              )}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </div>
+                    <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id} className="flex">
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead
+                                            key={header.id}
+                                            className="h-7 flex-shrink-0"
+                                            style={{
+                                                width: header.column.getSize(),
+                                                minWidth: header.column.columnDef.minSize,
+                                                maxWidth: header.column.columnDef.maxSize,
+                                            }}
+                                        >
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(
+                                                      header.column.columnDef.header,
+                                                      header.getContext()
+                                                  )}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableHeader>
+                    </Table>
                 </div>
             </div>
 
             {/* Scrollable Content Table */}
-            <div className="flex-1 overflow-auto">
+            <div
+                className="flex-1 overflow-auto"
+                ref={tableRef}
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+            >
                 <div className="min-w-max">
                     <Table>
                         <TableBody>
                             {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
+                                table.getRowModel().rows.map((row, index) => (
                                     <RequestContextMenu key={row.id} entry={row.original.entry}>
                                         <TableRow
-                                            data-state={row.getIsSelected() && "selected"}
+                                            data-row-index={index}
+                                            data-state={
+                                                selectedEntries.has(row.original.entry)
+                                                    ? "selected"
+                                                    : undefined
+                                            }
+                                            data-highlight={row.original.entry.highlight || "none"}
                                             className={cn(
-                                                "flex cursor-pointer hover:bg-accent",
-                                                row.getIsSelected() && "bg-accent",
-                                                {
-                                                    "bg-red-500/10":
-                                                        row.original.entry.highlight === "red",
-                                                    "bg-orange-500/10":
-                                                        row.original.entry.highlight === "orange",
-                                                    "bg-yellow-500/10":
-                                                        row.original.entry.highlight === "yellow",
-                                                    "bg-green-500/10":
-                                                        row.original.entry.highlight === "green",
-                                                    "bg-cyan-500/10":
-                                                        row.original.entry.highlight === "cyan",
-                                                    "bg-blue-500/10":
-                                                        row.original.entry.highlight === "blue",
-                                                    "bg-purple-500/10":
-                                                        row.original.entry.highlight === "purple",
-                                                    "bg-pink-500/10":
-                                                        row.original.entry.highlight === "pink",
-                                                }
+                                                "instant-select flex",
+                                                selectedEntries.has(row.original.entry) &&
+                                                    "bg-accent"
                                             )}
-                                            onClick={() => handleSelectEntry(row.original.entry)}
+                                            onClick={(e) => handleRowClick(e, row.original.entry)}
                                             onKeyDown={(e) => {
                                                 if (e.key === "Enter" || e.key === " ") {
                                                     e.preventDefault();
-                                                    handleSelectEntry(row.original.entry);
+                                                    handleMultiSelectEntry(
+                                                        row.original.entry,
+                                                        "single"
+                                                    );
                                                 }
                                             }}
                                             tabIndex={0}
                                             role="row"
-                                            aria-selected={row.getIsSelected()}
+                                            aria-selected={selectedEntries.has(row.original.entry)}
                                         >
                                             {row.getVisibleCells().map((cell) => (
                                                 <TableCell
