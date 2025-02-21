@@ -121,7 +121,11 @@ export function SessionContextProvider({ children }: { children: ReactNode }) {
 
 export function useSession() {
     const context = useContext(SessionContext);
-    if (typeof window === "undefined") {
+    // Check if we're in a web worker or service worker context
+    if (
+        typeof window === "undefined" ||
+        (typeof window !== "undefined" && typeof window.document === "undefined")
+    ) {
         return {
             selectedEntry: null,
             selectedEntries: new Set(),

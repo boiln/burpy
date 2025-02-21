@@ -186,9 +186,17 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch("/demo.har");
+            // Try to load from the root path first, then try the repo-relative path
+            let response = await fetch("/demo.har");
             if (!response.ok) {
-                throw new Error(`Failed to load demo file: ${response.statusText}`);
+                // If running on GitHub Pages, the path will be /[repo-name]/demo.har
+                const repoPath = window.location.pathname.split("/")[1];
+                response = await fetch(`/${repoPath}/demo.har`);
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to load demo file (HTTP ${response.status}): ${response.statusText}`
+                    );
+                }
             }
 
             const text = await response.text();
@@ -219,10 +227,10 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
             const session: HarSession = { entries };
             onSessionLoaded(session);
         } catch (error) {
-            console.error("Error details:", error);
+            console.error("Error loading demo file:", error);
             setError(
                 error instanceof Error
-                    ? error.message
+                    ? `Failed to load demo file: ${error.message}`
                     : "An unexpected error occurred while loading the demo file"
             );
         } finally {
