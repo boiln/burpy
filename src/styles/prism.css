@@ -84,15 +84,11 @@ pre[class*="language-"] {
 }
 
 .token.query-delimiter {
-    color: #808080;
-}
-
-.token.query-param {
-    color: #9cdcfe;
+    color: #b0c3d0;
 }
 
 .token.param-name {
-    color: #9cdcfe;
+    color: #bbcdff;
 }
 
 .token.param-value {

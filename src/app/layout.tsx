@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ErrorBoundary } from "@/components/error";
+import { ErrorBoundary } from "~/src/components/error-boundary";
 
 import type { Metadata } from "next";
 
