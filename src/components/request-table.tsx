@@ -42,12 +42,11 @@ type RequestData = {
     entry: any;
 };
 
-// Type guard to check if session is HarSession
+// check if session is har type
 function isHarSession(session: BurpSession | HarSession): session is HarSession {
     if (!session?.entries?.[0]) return false;
 
     const entry = session.entries[0];
-    // Check for HAR-specific structure
     return (
         "request" in entry &&
         "httpVersion" in entry.request &&
@@ -57,7 +56,7 @@ function isHarSession(session: BurpSession | HarSession): session is HarSession 
     );
 }
 
-// Type guard to check if response is HAR response
+// check if response is har type
 function isHarResponse(response: any): response is HarResponse {
     return "content" in response && "headers" in response;
 }
@@ -247,7 +246,6 @@ export function RequestTable({ session }: RequestTableProps) {
                     ? entry.request.url
                     : (entry as BurpEntry).request.url;
 
-                // Validate required fields
                 if (!url) {
                     console.warn(`Missing URL for entry ${index}`);
                     return {
@@ -265,14 +263,12 @@ export function RequestTable({ session }: RequestTableProps) {
                     };
                 }
 
-                // Parse URL
                 try {
                     const urlObj = new URL(url);
                     host = urlObj.host;
                     pathname = urlObj.pathname;
                     search = urlObj.search;
                 } catch (urlError) {
-                    // Handle invalid URLs gracefully
                     console.warn(`Invalid URL format for entry ${index}: ${url}`);
                     const urlParts = url.split("/");
                     if (urlParts.length >= 3) {
@@ -284,17 +280,14 @@ export function RequestTable({ session }: RequestTableProps) {
                     }
                 }
 
-                // Get MIME type and content length based on entry type
                 let mimeType = "unknown";
                 let contentLength = 0;
 
                 if (entry.response && isHarResponse(entry.response)) {
-                    // HAR entry
                     mimeType = entry.response.content.mimeType || "unknown";
                     contentLength =
                         entry.response.contentLength || entry.response.content.text?.length || 0;
                 } else if (entry.response) {
-                    // Burp entry
                     mimeType = entry.response.mimeType;
                     contentLength = entry.response.contentLength;
                 }
@@ -313,7 +306,6 @@ export function RequestTable({ session }: RequestTableProps) {
                     entry,
                 };
             } catch (error) {
-                // Fallback for completely invalid entries
                 console.error(`Error processing entry ${index}:`, error);
                 return {
                     id: `error-${index}`,

@@ -14,7 +14,9 @@ The tool is going to be used to test the network manipulation download and uploa
 ## Frontend Guidelines
 
 - FULLY IMPLEMENT ALL REQUESTED FUNCTIONALITY.
-- Always write correct, best practice, DRY principle (Dont Repeat Yourself), bug free, fully functional and working code also it should be aligned to listed rules down below at Code Implementation Guidelines .
+- When writing comments, get straight to the point and simplify, like init instead of initialize etc..
+- When writing comments, use all lower case, if the code explains itself, no need for a comment
+- Always write correct, best practice, DRY principle (Dont Repeat Yourself), bug free, fully functional and working code also it should be aligned to listed rules down below at Code Implementation Guidelines.
 - Focus on easy and readability code.
 - Leave NO todo’s, placeholders or missing pieces.
 - Ensure code is complete! Verify thoroughly finalised.

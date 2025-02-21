@@ -39,7 +39,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                 return false;
             }
 
-            // Validate first entry to check structure
+            // validate first entry structure
             const firstEntry = data.log.entries[0];
             if (!firstEntry.request?.method || !firstEntry.request?.url) {
                 console.error("Invalid HAR data: invalid request structure", firstEntry);
@@ -65,12 +65,12 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
         try {
             console.log(`Reading ${file.name}...`);
 
-            // Validate file size
+            // check file size
             if (file.size > 250 * 1024 * 1024) {
                 throw new Error("File size exceeds 250MB limit");
             }
 
-            // Validate file extension
+            // check file ext
             const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
             if (!["har", "xml"].includes(fileExtension)) {
                 throw new Error("Unsupported file format. Please upload a .har or .xml file");
@@ -86,7 +86,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                     throw new Error("Invalid HAR file format");
                 }
 
-                // Use the parser to validate and process each entry
+                // validate and process entries
                 const entries = harData.log.entries.map((entry) => {
                     try {
                         const { request, response } = parser.parse(entry, "application/har+json");
@@ -112,7 +112,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                     throw new Error("No items found in Burp XML file");
                 }
 
-                // Use the parser to validate and process each entry
+                // validate and process entries
                 const entries = Array.from(items).map((item, index) => {
                     try {
                         const burpEntry = BurpParser.parseXmlItem(item.outerHTML);
@@ -206,7 +206,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                 throw new Error("Invalid HAR file format in demo file");
             }
 
-            // Use the parser to validate and process each entry
+            // validate and process entries
             const entries = harData.log.entries.map((entry) => {
                 const { request, response } = parser.parse(entry, "application/har+json");
                 return {

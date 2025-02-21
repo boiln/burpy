@@ -1,7 +1,7 @@
 import type { BurpEntry } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
 
-// Base interface for all HTTP message parsers
+// base interface for http msg parsers
 export interface HttpParser<T> {
     parseRequest(raw: T): string;
     parseResponse(raw: T): string;
@@ -9,23 +9,19 @@ export interface HttpParser<T> {
     parse(raw: T, mimeType?: string): { request: string; response: string };
 }
 
-// Burp parser
-
 export class BurpParser implements HttpParser<BurpEntry> {
     private decodeBase64(str: string): string {
-        // If string is empty or not a string, return empty string
         if (!str || typeof str !== "string") {
             return "";
         }
 
-        // Check if the string looks like base64
         const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
         if (!base64Regex.test(str)) {
-            return str; // Return original string if not base64
+            return str;
         }
 
         try {
-            // Try to decode, but handle padding issues
+            // handle base64 padding
             let paddedStr = str;
             while (paddedStr.length % 4 !== 0) {
                 paddedStr += "=";
@@ -33,12 +29,12 @@ export class BurpParser implements HttpParser<BurpEntry> {
             return atob(paddedStr);
         } catch (error) {
             console.warn("Base64 decoding failed, returning original string:", error);
-            return str; // Return original string if decoding fails
+            return str;
         }
     }
 
     parseRequest(entry: BurpEntry): string {
-        // If we have a raw request body, decode and use it directly
+        // use raw request body if available
         if (entry.request.body) {
             const decodedBody = this.decodeBase64(entry.request.body);
             if (decodedBody && decodedBody.includes("\r\n")) {
@@ -46,7 +42,6 @@ export class BurpParser implements HttpParser<BurpEntry> {
             }
         }
 
-        // Otherwise construct the request from individual parts
         const headers = entry.request.headers
             .map((header) => this.decodeBase64(header))
             .join("\r\n");
@@ -80,7 +75,7 @@ export class BurpParser implements HttpParser<BurpEntry> {
 
         const entry = raw as BurpEntry;
 
-        // More specific Burp validation
+        // validate burp request structure
         const hasValidRequest =
             entry.request &&
             typeof entry.request === "object" &&
@@ -113,13 +108,12 @@ export class BurpParser implements HttpParser<BurpEntry> {
             const getElementContent = (selector: string) =>
                 doc.querySelector(selector)?.textContent || "";
 
-            // Get the raw request and response
             const rawRequest = getElementContent("request");
             const rawResponse = getElementContent("response");
             const requestHeaders = getElementContent("requestheaders");
             const responseHeaders = getElementContent("responseheaders");
 
-            // Parse status with a default of 0 for empty/invalid values
+            // default status to 0 if invalid
             const statusText = getElementContent("status");
             const status = statusText ? parseInt(statusText, 10) : 0;
 
@@ -134,7 +128,7 @@ export class BurpParser implements HttpParser<BurpEntry> {
                     body: rawRequest || "",
                 },
                 response: {
-                    status: isNaN(status) ? 0 : status, // Ensure we never return NaN
+                    status: isNaN(status) ? 0 : status,
                     statusText: getElementContent("statustext") || "No response",
                     headers: responseHeaders ? [responseHeaders] : [],
                     body: rawResponse || "",
@@ -150,8 +144,6 @@ export class BurpParser implements HttpParser<BurpEntry> {
     }
 }
 
-// HAR parser
-
 export class HarParser implements HttpParser<HarEntry> {
     parseRequest(entry: HarEntry): string {
         const requestLine = `${entry.request.method} ${entry.request.url} ${entry.request.httpVersion}`;
@@ -166,7 +158,6 @@ export class HarParser implements HttpParser<HarEntry> {
             return "No response received\r\n";
         }
 
-        // Construct the response parts
         const statusLine = `${entry.response.httpVersion} ${entry.response.statusText}`;
         const headers = entry.response.headers.map((h) => `${h.name}: ${h.value}`).join("\r\n");
         const body = entry.response.content?.text || "";
@@ -181,21 +172,21 @@ export class HarParser implements HttpParser<HarEntry> {
 
         const entry = raw as HarEntry;
 
-        // More specific HAR validation
+        // validate har request structure
         const hasValidRequest =
             entry.request &&
             typeof entry.request === "object" &&
             typeof entry.request.method === "string" &&
             typeof entry.request.url === "string" &&
             Array.isArray(entry.request.headers) &&
-            "httpVersion" in entry.request; // HAR-specific
+            "httpVersion" in entry.request;
 
         const hasValidResponse =
             entry.response &&
             typeof entry.response === "object" &&
             typeof entry.response.status === "number" &&
             Array.isArray(entry.response.headers) &&
-            "content" in entry.response && // HAR-specific
+            "content" in entry.response &&
             typeof entry.response.content === "object";
 
         return Boolean(hasValidRequest && hasValidResponse);
@@ -217,7 +208,6 @@ export class HttpMessageParser {
     }
 
     parse<T>(input: T, mimeType?: string): { request: string; response: string } {
-        // Try specified parser first
         if (mimeType && this.parsers.has(mimeType)) {
             const parser = this.parsers.get(mimeType)!;
             if (parser.validate(input)) {
@@ -226,7 +216,6 @@ export class HttpMessageParser {
             }
         }
 
-        // Fallback to auto-detection
         for (const [type, parser] of this.parsers.entries()) {
             if (parser.validate(input)) {
                 console.debug(`Auto-detected parser: ${type}`);
@@ -254,7 +243,6 @@ export class HttpMessageParser {
     }
 }
 
-// Utility function to create default parser with registered formats
 export function createDefaultParser() {
     const parser = new HttpMessageParser();
     parser.registerParser("application/har+json", new HarParser());
