@@ -4,7 +4,7 @@ A modern, fast, and user-friendly web application for viewing saved HTTP session
 
 Burpy (12.2.25)
 
-https://github.com/user-attachments/assets/2feef85b-fdf3-49f4-9799-fc50fb02d30d
+https://github.com/user-attachments/assets/d41f5f21-ff09-4ad5-92a0-cdd402a8d5ec
 
 ## Features
 
