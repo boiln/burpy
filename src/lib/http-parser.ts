@@ -51,6 +51,14 @@ export class BurpParser implements HttpParser<BurpEntry> {
             return "No response received\r\n";
         }
 
+        // Check if body already contains the full HTTP response (starts with HTTP/)
+        if (entry.response.body) {
+            const decodedBody = this.decodeBase64(entry.response.body);
+            if (decodedBody && decodedBody.startsWith("HTTP/")) {
+                return decodedBody + "\r\n";
+            }
+        }
+
         const headers = entry.response.headers
             .map((header) => this.decodeBase64(header))
             .join("\r\n");
@@ -147,7 +155,7 @@ export class HarParser implements HttpParser<HarEntry> {
             return "No response received\r\n";
         }
 
-        const statusLine = `${entry.response.httpVersion} ${entry.response.statusText}`;
+        const statusLine = `${entry.response.httpVersion} ${entry.response.status} ${entry.response.statusText}`;
         const headers = entry.response.headers.map((h) => `${h.name}: ${h.value}`).join("\r\n");
         const body = entry.response.content?.text || "";
 
