@@ -9,6 +9,8 @@ import type { HighlightColor } from "@/types/burp";
 interface SessionContextType {
     selectedEntry: BurpEntry | HarEntry | null;
     selectedEntries: Set<BurpEntry | HarEntry>;
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
     handleSelectEntry: (entry: BurpEntry | HarEntry) => void;
     handleMultiSelectEntry: (
         entry: BurpEntry | HarEntry,
@@ -25,6 +27,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     const [selectedEntry, setSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
     const [selectedEntries, setSelectedEntries] = useState<Set<BurpEntry | HarEntry>>(new Set());
     const [lastSelectedEntry, setLastSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     const [, setForceUpdate] = useState({});
 
     useEffect(() => {
@@ -116,6 +119,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             value={{
                 selectedEntry: isClient ? selectedEntry : null,
                 selectedEntries: isClient ? selectedEntries : new Set(),
+                searchTerm,
+                setSearchTerm,
                 handleSelectEntry,
                 handleMultiSelectEntry,
                 handleHighlightEntry,
@@ -137,6 +142,8 @@ export const useSession = () => {
         return {
             selectedEntry: null,
             selectedEntries: new Set(),
+            searchTerm: "",
+            setSearchTerm: () => {},
             handleSelectEntry: () => {},
             handleMultiSelectEntry: () => {},
             handleHighlightEntry: () => {},

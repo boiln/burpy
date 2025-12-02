@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Highlight } from "@/components/ui/highlight";
 import { cn } from "@/lib/utils";
 import { getEntryTime } from "@/lib/entry-utils";
 import type { RequestData } from "./types";
@@ -22,7 +23,8 @@ const SortableHeader = ({ column, label }: { column: any; label: string }) => (
     </Button>
 );
 
-export const columns: ColumnDef<RequestData>[] = [
+// We need to pass searchTerm through table meta
+export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
     {
         accessorKey: "index",
         header: ({ column }) => <SortableHeader column={column} label="#" />,
@@ -34,7 +36,11 @@ export const columns: ColumnDef<RequestData>[] = [
     {
         accessorKey: "host",
         header: ({ column }) => <SortableHeader column={column} label="Host" />,
-        cell: ({ row }) => <div className="truncate font-mono">{row.getValue("host")}</div>,
+        cell: ({ row }) => (
+            <div className="truncate font-mono">
+                <Highlight text={row.getValue("host")} searchTerm={searchTerm} />
+            </div>
+        ),
         size: 220,
         minSize: 120,
         maxSize: 300,
@@ -42,7 +48,11 @@ export const columns: ColumnDef<RequestData>[] = [
     {
         accessorKey: "method",
         header: ({ column }) => <SortableHeader column={column} label="Method" />,
-        cell: ({ row }) => <div className="font-mono">{row.getValue("method")}</div>,
+        cell: ({ row }) => (
+            <div className="font-mono">
+                <Highlight text={row.getValue("method")} searchTerm={searchTerm} />
+            </div>
+        ),
         size: 85,
         minSize: 60,
         maxSize: 100,
@@ -52,7 +62,9 @@ export const columns: ColumnDef<RequestData>[] = [
         header: ({ column }) => <SortableHeader column={column} label="Path" />,
         cell: ({ row }) => (
             <div className="flex items-center justify-between gap-1 font-mono">
-                <span className="truncate">{row.getValue("url")}</span>
+                <span className="truncate">
+                    <Highlight text={row.getValue("url")} searchTerm={searchTerm} />
+                </span>
                 {row.original.entry.comment && (
                     <div className="flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5">
                         <MessageSquare className="h-3 w-3" />
@@ -79,7 +91,11 @@ export const columns: ColumnDef<RequestData>[] = [
     {
         accessorKey: "mimeType",
         header: ({ column }) => <SortableHeader column={column} label="MIME Type" />,
-        cell: ({ row }) => <div className="truncate font-mono">{row.getValue("mimeType")}</div>,
+        cell: ({ row }) => (
+            <div className="truncate font-mono">
+                <Highlight text={row.getValue("mimeType")} searchTerm={searchTerm} />
+            </div>
+        ),
         size: 175,
         minSize: 150,
         maxSize: 225,
@@ -103,3 +119,6 @@ export const columns: ColumnDef<RequestData>[] = [
         maxSize: 120,
     },
 ];
+
+// Keep the old export for backward compatibility (no highlighting)
+export const columns: ColumnDef<RequestData>[] = createColumns("");

@@ -28,7 +28,7 @@ import {
     getResponseInfo,
 } from "@/lib/entry-utils";
 
-import { columns } from "./columns";
+import { columns, createColumns } from "./columns";
 import type { RequestData } from "./types";
 import type { BurpSession, BurpEntry } from "@/types/burp";
 import type { HarSession, HarEntry } from "@/types/har";
@@ -41,8 +41,11 @@ export const RequestTable = (props: RequestTableProps) => {
     const { session } = props;
 
     const [sorting, setSorting] = useState<SortingState>([]);
-    const { selectedEntry, selectedEntries, handleMultiSelectEntry } = useSession();
+    const { selectedEntry, selectedEntries, searchTerm, handleMultiSelectEntry } = useSession();
     const tableRef = useRef<HTMLDivElement>(null);
+
+    // Memoize columns with search term for highlighting
+    const tableColumns = useMemo(() => createColumns(searchTerm), [searchTerm]);
 
     const data = useMemo(() => {
         if (!session?.entries) return [];
@@ -54,7 +57,7 @@ export const RequestTable = (props: RequestTableProps) => {
 
     const table = useReactTable({
         data,
-        columns,
+        columns: tableColumns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         onSortingChange: setSorting,
