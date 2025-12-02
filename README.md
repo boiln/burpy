@@ -8,11 +8,11 @@ https://github.com/user-attachments/assets/d41f5f21-ff09-4ad5-92a0-cdd402a8d5ec
 
 ## Features
 
--   Fast search
 -   Fast and responsive
 -   Syntax highlighting
 -   Dark theme support
 -   JSON formatting
+-   Search
 
 ## Getting Started
 
