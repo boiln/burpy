@@ -7,23 +7,23 @@ Burpy (1.25.25)
 
 ## Features
 
-- 🚀 Fast and responsive
-- 📝 Syntax highlighting
-- 🎨 Dark theme support
-- 💻 Cross-platform web app
-- 🎯 JSON formatting
+-   🚀 Fast and responsive
+-   📝 Syntax highlighting
+-   🎨 Dark theme support
+-   💻 Cross-platform web app
+-   🎯 JSON formatting
 
-- Next.js
-- TypeScript
-- Tailwind CSS
-- Shadcn UI
+-   Next.js
+-   TypeScript
+-   Tailwind CSS
+-   Shadcn UI
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20 or higher
-- pnpm (recommended) or npm
+-   Node.js 20 or higher
+-   pnpm (recommended) or npm
 
 ### Installation
 

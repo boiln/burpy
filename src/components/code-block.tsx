@@ -4,175 +4,19 @@ import { useEffect, useState } from "react";
 import { WrapText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PrismHighlight } from "@/components/prism-highlight";
 import { cn } from "@/lib/utils";
-import Prism from "@/lib/prism";
-
-interface PrismHighlightProps {
-    code: string;
-    language: string;
-}
-
-const PrismHighlight = (props: PrismHighlightProps) => {
-    const { code, language } = props;
-    const [highlighted, setHighlighted] = useState(code);
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        setHighlighted(
-            Prism.highlight(code, Prism.languages[language] || Prism.languages.text, language)
-        );
-    }, [code, language]);
-
-    return <div dangerouslySetInnerHTML={{ __html: highlighted }} />;
-};
-
-const formatCode = async (str: string, format: string): Promise<string> => {
-    try {
-        if (format === "json") {
-            try {
-                const parsed = JSON.parse(str);
-                return JSON.stringify(parsed, null, 4);
-            } catch (e) {
-                const trimmed = str.trim();
-                if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
-                    return str;
-                }
-
-                const lines = str
-                    .split(/\n/)
-                    .map((line) => line.trim())
-                    .filter(Boolean);
-                const formattedLines = lines.map((line) => {
-                    try {
-                        const parsed = JSON.parse(line);
-                        return JSON.stringify(parsed, null, 4);
-                    } catch {
-                        return line;
-                    }
-                });
-                return formattedLines.join("\n\n");
-            }
-        }
-
-        const lines = str
-            .split(/\n/)
-            .map((line) => line.trim())
-            .filter(Boolean);
-
-        const hasStructuredData = lines.some(
-            (line) => line.includes(":") || line.includes("=") || line.includes(";")
-        );
-
-        if (hasStructuredData) {
-            return lines.join("\n");
-        }
-
-        return lines.join("\n");
-    } catch (e) {
-        console.warn("Formatting failed:", e);
-        return str;
-    }
-};
-
-const detectPayloadFormat = (str: string): string => {
-    const trimmed = str.trim();
-    if (!trimmed) return "text";
-
-    try {
-        JSON.parse(trimmed);
-        return "json";
-    } catch {
-        const isCodeLike =
-            trimmed.includes("{") ||
-            trimmed.includes(";") ||
-            trimmed.includes("function") ||
-            trimmed.includes("=>") ||
-            trimmed.includes("class") ||
-            trimmed.includes("import");
-
-        if (isCodeLike) {
-            return "javascript";
-        }
-    }
-
-    return "text";
-};
-
-const splitPayloads = (body: string): string[] => {
-    const payloads: string[] = [];
-    let currentPayload = "";
-    let inString = false;
-    let inObject = 0;
-    let inArray = 0;
-    let lastChar = "";
-
-    for (let i = 0; i < body.length; i++) {
-        const char = body[i];
-        currentPayload += char;
-
-        if (char === '"' && lastChar !== "\\") {
-            inString = !inString;
-        }
-
-        if (!inString) {
-            if (char === "{") inObject++;
-            if (char === "}") inObject--;
-            if (char === "[") inArray++;
-            if (char === "]") inArray--;
-
-            const isBalanced = inObject === 0 && inArray === 0;
-            const isEndChar =
-                char === "\n" ||
-                (char === "}" && body[i + 1] === "\n") ||
-                (char === "}" && i === body.length - 1) ||
-                (char === "]" && body[i + 1] === "\n") ||
-                (char === "]" && i === body.length - 1);
-
-            if (isBalanced && isEndChar && currentPayload.trim()) {
-                payloads.push(currentPayload.trim());
-                currentPayload = "";
-            }
-        }
-
-        lastChar = char;
-    }
-
-    if (currentPayload.trim()) {
-        payloads.push(currentPayload.trim());
-    }
-
-    return payloads;
-};
-
-const highlightPayload = async (payload: string): Promise<string> => {
-    const format = detectPayloadFormat(payload);
-    if (!format) return payload;
-
-    try {
-        const formatted = await formatCode(payload, format);
-
-        if (formatted.length > 1000000) {
-            return `// payload truncated for perf\n${formatted.slice(0, 1000000)}...`;
-        }
-
-        if (typeof window !== "undefined") {
-            return Prism.highlight(
-                formatted,
-                Prism.languages[format] || Prism.languages.text,
-                format
-            );
-        }
-
-        return formatted;
-    } catch {
-        return payload;
-    }
-};
+import { detectPayloadFormat, parseHttpMessage, processBody } from "@/lib/code-formatting";
 
 interface CodeBlockProps {
     language: string;
     value: string;
+}
+
+interface FormattedContent {
+    requestLine: string;
+    headers: string;
+    body: string;
 }
 
 export const CodeBlock = (props: CodeBlockProps) => {
@@ -180,17 +24,33 @@ export const CodeBlock = (props: CodeBlockProps) => {
 
     const [isWrapped, setIsWrapped] = useState(true);
     const [isBeautified, setIsBeautified] = useState(true);
-    const [formattedContent, setFormattedContent] = useState<{
-        firstLine: string;
-        headers: string;
-        body: string;
-    }>({ firstLine: "", headers: "", body: "" });
+    const [content, setContent] = useState<FormattedContent>({
+        requestLine: "",
+        headers: "",
+        body: "",
+    });
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLPreElement>) => {
+    useEffect(() => {
+        const update = async () => {
+            const { requestLine, headers, body } = parseHttpMessage(value);
+            const processedBody = await processBody(body, isBeautified);
+
+            setContent({
+                requestLine,
+                headers,
+                body: processedBody,
+            });
+        };
+
+        update();
+    }, [value, isBeautified]);
+
+    const handleSelectAll = (e: React.KeyboardEvent<HTMLPreElement>) => {
         const isSelectAll = (e.ctrlKey || e.metaKey) && e.key === "a";
         if (!isSelectAll) return;
 
         e.preventDefault();
+
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(e.currentTarget);
@@ -198,107 +58,50 @@ export const CodeBlock = (props: CodeBlockProps) => {
         selection?.addRange(range);
     };
 
-    useEffect(() => {
-        const updateContent = async () => {
-            const parts = value.split("\r\n\r\n");
-            const headers = parts[0];
-            const body = parts.slice(1).join("\r\n\r\n");
-
-            const headerLines = headers.split("\r\n");
-            const firstLine = headerLines[0];
-
-            const modifiedFirstLine = firstLine.replace(
-                /(GET|POST|PUT|DELETE|PATCH) (https?:\/\/[^\/]+)(\S+)/,
-                (_, method, domain, path) => `${method} ${path}`
-            );
-
-            const otherHeaders = headerLines.slice(1);
-
-            let processedBody = "";
-            if (body) {
-                const format = detectPayloadFormat(body);
-
-                if (isBeautified) {
-                    processedBody = await formatCode(body, format);
-                } else {
-                    const payloads = splitPayloads(body);
-                    const formattedPayloads = await Promise.all(
-                        payloads.map(async (payload) => {
-                            const payloadFormat = detectPayloadFormat(payload);
-                            return isBeautified
-                                ? await formatCode(payload, payloadFormat)
-                                : payload;
-                        })
-                    );
-                    processedBody = formattedPayloads.join("\n");
-                }
-            }
-
-            setFormattedContent({
-                firstLine: modifiedFirstLine,
-                headers: otherHeaders.join("\r\n"),
-                body: processedBody,
-            });
-        };
-
-        updateContent();
-    }, [value, isBeautified]);
+    const wrapStyles = {
+        wordBreak: isWrapped ? "break-word" : "normal",
+        whiteSpace: isWrapped ? "pre-wrap" : "pre",
+    } as const;
 
     return (
         <div className="relative flex h-full flex-col">
-            <div className="flex items-center gap-1 border-b border-border/40 bg-background/95 px-2 py-1">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setIsWrapped(!isWrapped)}
-                    title="Text wrap"
-                >
-                    <WrapText className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setIsBeautified(!isBeautified)}
-                    title="Beautify"
-                >
-                    <div className="flex items-center text-[11px]">{"{ }"}</div>
-                </Button>
-            </div>
+            <Toolbar
+                isWrapped={isWrapped}
+                isBeautified={isBeautified}
+                onToggleWrap={() => setIsWrapped(!isWrapped)}
+                onToggleBeautify={() => setIsBeautified(!isBeautified)}
+            />
+
             <pre
                 className={cn(
                     "flex-1 overflow-auto rounded-md !bg-background/95 p-3 text-sm leading-normal",
                     isWrapped && "whitespace-pre-wrap break-words"
                 )}
                 tabIndex={0}
-                onKeyDown={handleKeyDown}
-                style={{
-                    wordBreak: isWrapped ? "break-word" : "normal",
-                    whiteSpace: isWrapped ? "pre-wrap" : "pre",
-                }}
+                onKeyDown={handleSelectAll}
+                style={wrapStyles}
             >
                 <code
                     className={cn(
                         `language-${language} block`,
                         isWrapped && "whitespace-pre-wrap break-words"
                     )}
-                    style={{
-                        wordBreak: isWrapped ? "break-word" : "normal",
-                        whiteSpace: isWrapped ? "pre-wrap" : "pre",
-                    }}
+                    style={wrapStyles}
                 >
-                    <PrismHighlight code={formattedContent.firstLine} language={language} />
-                    <div className="my-2 border-b border-border/40" />
-                    {formattedContent.headers && (
-                        <PrismHighlight code={formattedContent.headers} language={language} />
+                    <PrismHighlight code={content.requestLine} language={language} />
+
+                    <Divider />
+
+                    {content.headers && (
+                        <PrismHighlight code={content.headers} language={language} />
                     )}
-                    {formattedContent.body && (
+
+                    {content.body && (
                         <>
-                            <div className="my-2 border-b border-border/40" />
+                            <Divider />
                             <PrismHighlight
-                                code={formattedContent.body}
-                                language={detectPayloadFormat(formattedContent.body)}
+                                code={content.body}
+                                language={detectPayloadFormat(content.body)}
                             />
                         </>
                     )}
@@ -307,3 +110,40 @@ export const CodeBlock = (props: CodeBlockProps) => {
         </div>
     );
 };
+
+interface ToolbarProps {
+    isWrapped: boolean;
+    isBeautified: boolean;
+    onToggleWrap: () => void;
+    onToggleBeautify: () => void;
+}
+
+const Toolbar = (props: ToolbarProps) => {
+    const { isWrapped, isBeautified, onToggleWrap, onToggleBeautify } = props;
+
+    return (
+        <div className="flex items-center gap-1 border-b border-border/40 bg-background/95 px-2 py-1">
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={onToggleWrap}
+                title="Text wrap"
+            >
+                <WrapText className="h-3.5 w-3.5" />
+            </Button>
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={onToggleBeautify}
+                title="Beautify"
+            >
+                <div className="flex items-center text-[11px]">{"{ }"}</div>
+            </Button>
+        </div>
+    );
+};
+
+const Divider = () => <div className="my-2 border-b border-border/40" />;
