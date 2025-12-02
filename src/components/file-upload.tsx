@@ -2,8 +2,9 @@
 
 import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Upload } from "lucide-react";
-import { BurpSession } from "@/types/burp";
-import { HarEntry, HarSession } from "@/types/har";
+
+import type { BurpSession } from "@/types/burp";
+import type { HarEntry, HarSession } from "@/types/har";
 import { cn } from "@/lib/utils";
 import { BurpParser, createDefaultParser } from "@/lib/http-parser";
 
@@ -15,7 +16,9 @@ export interface FileUploadRef {
     loadDemoFile: () => Promise<void>;
 }
 
-const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded }, ref) => {
+const FileUpload = forwardRef<FileUploadRef, FileUploadProps>((props, ref) => {
+    const { onSessionLoaded } = props;
+
     const [loading, setLoading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -26,25 +29,28 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                 console.error("Invalid HAR data: not an object", data);
                 return false;
             }
+
             if (!data.log) {
                 console.error("Invalid HAR data: missing log property", data);
                 return false;
             }
+
             if (!Array.isArray(data.log.entries)) {
                 console.error("Invalid HAR data: entries is not an array", data.log);
                 return false;
             }
+
             if (data.log.entries.length === 0) {
                 console.error("Invalid HAR data: entries array is empty");
                 return false;
             }
 
-            // validate first entry structure
             const firstEntry = data.log.entries[0];
             if (!firstEntry.request?.method || !firstEntry.request?.url) {
                 console.error("Invalid HAR data: invalid request structure", firstEntry);
                 return false;
             }
+
             if (typeof firstEntry.response?.status !== "number") {
                 console.error("Invalid HAR data: invalid response structure", firstEntry);
                 return false;
@@ -62,15 +68,14 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
 
         setLoading(true);
         setError(null);
+
         try {
             console.log(`Reading ${file.name}...`);
 
-            // check file size
             if (file.size > 250 * 1024 * 1024) {
                 throw new Error("File size exceeds 250MB limit");
             }
 
-            // check file ext
             const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
             if (!["har", "xml"].includes(fileExtension)) {
                 throw new Error("Unsupported file format. Please upload a .har or .xml file");
@@ -86,7 +91,6 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                     throw new Error("Invalid HAR file format");
                 }
 
-                // validate and process entries
                 const entries = harData.log.entries.map((entry) => {
                     try {
                         const { request, response } = parser.parse(entry, "application/har+json");
@@ -103,42 +107,42 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
 
                 const session: HarSession = { entries };
                 onSessionLoaded(session);
-            } else {
-                const xmlParser = new DOMParser();
-                const doc = xmlParser.parseFromString(text, "text/xml");
-                const items = doc.querySelectorAll("item");
-
-                if (!items || items.length === 0) {
-                    throw new Error("No items found in Burp XML file");
-                }
-
-                // validate and process entries
-                const entries = Array.from(items).map((item, index) => {
-                    try {
-                        const burpEntry = BurpParser.parseXmlItem(item.outerHTML);
-
-                        const { request, response } = parser.parse(
-                            burpEntry,
-                            "application/vnd.burp.suite.item"
-                        );
-                        return {
-                            ...burpEntry,
-                            parsedRequest: request,
-                            parsedResponse: response,
-                        };
-                    } catch (parseError) {
-                        console.error(`Failed to parse Burp item ${index + 1}:`, parseError);
-                        throw parseError;
-                    }
-                });
-
-                if (!entries || entries.length === 0) {
-                    throw new Error("No valid entries found in the file");
-                }
-
-                const session: BurpSession = { entries };
-                onSessionLoaded(session);
+                return;
             }
+
+            const xmlParser = new DOMParser();
+            const doc = xmlParser.parseFromString(text, "text/xml");
+            const items = doc.querySelectorAll("item");
+
+            if (!items || items.length === 0) {
+                throw new Error("No items found in Burp XML file");
+            }
+
+            const entries = Array.from(items).map((item, index) => {
+                try {
+                    const burpEntry = BurpParser.parseXmlItem(item.outerHTML);
+                    const { request, response } = parser.parse(
+                        burpEntry,
+                        "application/vnd.burp.suite.item"
+                    );
+
+                    return {
+                        ...burpEntry,
+                        parsedRequest: request,
+                        parsedResponse: response,
+                    };
+                } catch (parseError) {
+                    console.error(`Failed to parse Burp item ${index + 1}:`, parseError);
+                    throw parseError;
+                }
+            });
+
+            if (!entries || entries.length === 0) {
+                throw new Error("No valid entries found in the file");
+            }
+
+            const session: BurpSession = { entries };
+            onSessionLoaded(session);
         } catch (error) {
             console.error("Error processing file:", error);
             setError(
@@ -153,10 +157,10 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            processFile(file);
-            event.target.value = "";
-        }
+        if (!file) return;
+
+        processFile(file);
+        event.target.value = "";
     };
 
     const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -171,27 +175,31 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
         setIsDragging(false);
     }, []);
 
-    const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsDragging(false);
+    const handleDrop = useCallback(
+        (event: React.DragEvent<HTMLDivElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsDragging(false);
 
-        const file = event.dataTransfer.files?.[0];
-        if (file) {
+            const file = event.dataTransfer.files?.[0];
+            if (!file) return;
+
             processFile(file);
-        }
-    }, []);
+        },
+        [processFile]
+    );
 
     const loadDemoFile = async () => {
         setLoading(true);
         setError(null);
+
         try {
-            // Try to load from the root path first, then try the repo-relative path
             let response = await fetch("/demo.har");
+
             if (!response.ok) {
-                // If running on GitHub Pages, the path will be /[repo-name]/demo.har
                 const repoPath = window.location.pathname.split("/")[1];
                 response = await fetch(`/${repoPath}/demo.har`);
+
                 if (!response.ok) {
                     throw new Error(
                         `Failed to load demo file (HTTP ${response.status}): ${response.statusText}`
@@ -200,9 +208,9 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
             }
 
             const text = await response.text();
-            let harData;
             const parser = createDefaultParser();
 
+            let harData;
             try {
                 harData = JSON.parse(text);
             } catch (parseError) {
@@ -214,7 +222,6 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onSessionLoaded
                 throw new Error("Invalid HAR file format in demo file");
             }
 
-            // validate and process entries
             const entries = harData.log.entries.map((entry) => {
                 const { request, response } = parser.parse(entry, "application/har+json");
                 return {

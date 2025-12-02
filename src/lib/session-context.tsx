@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { BurpEntry } from "@/types/burp";
-import { HarEntry } from "@/types/har";
+
+import type { BurpEntry } from "@/types/burp";
+import type { HarEntry } from "@/types/har";
 import type { HighlightColor } from "@/types/burp";
 
 interface SessionContextType {
@@ -19,7 +20,7 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-export function SessionContextProvider({ children }: { children: ReactNode }) {
+export const SessionContextProvider = ({ children }: { children: ReactNode }) => {
     const [isClient, setIsClient] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
     const [selectedEntries, setSelectedEntries] = useState<Set<BurpEntry | HarEntry>>(new Set());
@@ -44,62 +45,69 @@ export function SessionContextProvider({ children }: { children: ReactNode }) {
             setSelectedEntry(entry);
             setSelectedEntries(new Set([entry]));
             setLastSelectedEntry(entry);
-        } else if (mode === "ctrl") {
+            return;
+        }
+
+        if (mode === "ctrl") {
             const newSelectedEntries = new Set(selectedEntries);
+
             if (newSelectedEntries.has(entry)) {
                 newSelectedEntries.delete(entry);
             } else {
                 newSelectedEntries.add(entry);
             }
+
             setSelectedEntries(newSelectedEntries);
             setSelectedEntry(entry);
             setLastSelectedEntry(entry);
-        } else if (mode === "shift" && lastSelectedEntry) {
-            // We'll handle the range selection in the table component
+            return;
+        }
+
+        if (mode === "shift" && lastSelectedEntry) {
             setSelectedEntry(entry);
             setLastSelectedEntry(entry);
         }
     };
 
     const handleHighlightEntry = (entry: BurpEntry | HarEntry, color: HighlightColor | null) => {
-        // Apply highlight to all selected entries if the target entry is selected
         if (selectedEntries.has(entry)) {
             selectedEntries.forEach((selectedEntry) => {
                 if (color === null) {
                     delete selectedEntry.highlight;
-                } else {
-                    selectedEntry.highlight = color;
+                    return;
                 }
+
+                selectedEntry.highlight = color;
             });
         } else {
-            // If entry is not in selection, only apply to that entry
             if (color === null) {
                 delete entry.highlight;
             } else {
                 entry.highlight = color;
             }
         }
+
         setForceUpdate({});
     };
 
     const handleCommentEntry = (entry: BurpEntry | HarEntry, comment: string) => {
-        // Apply comment to all selected entries if the target entry is selected
         if (selectedEntries.has(entry)) {
             selectedEntries.forEach((selectedEntry) => {
                 if (comment.trim() === "") {
                     delete selectedEntry.comment;
-                } else {
-                    selectedEntry.comment = comment;
+                    return;
                 }
+
+                selectedEntry.comment = comment;
             });
         } else {
-            // If entry is not in selection, only apply to that entry
             if (comment.trim() === "") {
                 delete entry.comment;
             } else {
                 entry.comment = comment;
             }
         }
+
         setForceUpdate({});
     };
 
@@ -117,11 +125,11 @@ export function SessionContextProvider({ children }: { children: ReactNode }) {
             {children}
         </SessionContext.Provider>
     );
-}
+};
 
-export function useSession() {
+export const useSession = () => {
     const context = useContext(SessionContext);
-    // Check if we're in a web worker or service worker context
+
     if (
         typeof window === "undefined" ||
         (typeof window !== "undefined" && typeof window.document === "undefined")
@@ -135,8 +143,10 @@ export function useSession() {
             handleCommentEntry: () => {},
         };
     }
+
     if (context === undefined) {
         throw new Error("useSession must be used within a SessionContextProvider");
     }
+
     return context;
-}
+};

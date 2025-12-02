@@ -1,11 +1,12 @@
 "use client";
 
-import { useSession } from "@/lib/session-context";
-import { createDefaultParser } from "@/lib/http-parser";
-import { CodeBlock } from "@/components/code-block";
 import { useMemo } from "react";
 
-export function RequestViewer() {
+import { CodeBlock } from "@/components/code-block";
+import { createDefaultParser } from "@/lib/http-parser";
+import { useSession } from "@/lib/session-context";
+
+export const RequestViewer = () => {
     const { selectedEntry } = useSession();
     const parser = useMemo(() => createDefaultParser(), []);
 
@@ -13,6 +14,7 @@ export function RequestViewer() {
 
     try {
         const { request } = parser.parse(selectedEntry);
+
         return (
             <div className="h-full overflow-auto p-2">
                 <CodeBlock language="http" value={request} />
@@ -26,4 +28,4 @@ export function RequestViewer() {
             </div>
         );
     }
-}
+};

@@ -1,48 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { WrapText } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Prism from "@/lib/prism";
 
-function PrismHighlight({ code, language }: { code: string; language: string }) {
+interface PrismHighlightProps {
+    code: string;
+    language: string;
+}
+
+const PrismHighlight = (props: PrismHighlightProps) => {
+    const { code, language } = props;
     const [highlighted, setHighlighted] = useState(code);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            setHighlighted(
-                Prism.highlight(code, Prism.languages[language] || Prism.languages.text, language)
-            );
-        }
+        if (typeof window === "undefined") return;
+
+        setHighlighted(
+            Prism.highlight(code, Prism.languages[language] || Prism.languages.text, language)
+        );
     }, [code, language]);
 
     return <div dangerouslySetInnerHTML={{ __html: highlighted }} />;
-}
+};
 
 const formatCode = async (str: string, format: string): Promise<string> => {
     try {
-        // handle multiple json objects in http post params
         if (format === "json") {
             try {
                 const parsed = JSON.parse(str);
                 return JSON.stringify(parsed, null, 4);
             } catch (e) {
-                if (str.trim().startsWith("{") || str.trim().startsWith("[")) {
-                    const lines = str
-                        .split(/\n/)
-                        .map((line) => line.trim())
-                        .filter(Boolean);
-                    const formattedLines = lines.map((line) => {
-                        try {
-                            const parsed = JSON.parse(line);
-                            return JSON.stringify(parsed, null, 4);
-                        } catch (e) {
-                            return line;
-                        }
-                    });
-                    return formattedLines.join("\n\n");
+                const trimmed = str.trim();
+                if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+                    return str;
                 }
+
+                const lines = str
+                    .split(/\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean);
+                const formattedLines = lines.map((line) => {
+                    try {
+                        const parsed = JSON.parse(line);
+                        return JSON.stringify(parsed, null, 4);
+                    } catch {
+                        return line;
+                    }
+                });
+                return formattedLines.join("\n\n");
             }
         }
 
@@ -51,8 +60,11 @@ const formatCode = async (str: string, format: string): Promise<string> => {
             .map((line) => line.trim())
             .filter(Boolean);
 
-        // add spacing for structured data
-        if (lines.some((line) => line.includes(":") || line.includes("=") || line.includes(";"))) {
+        const hasStructuredData = lines.some(
+            (line) => line.includes(":") || line.includes("=") || line.includes(";")
+        );
+
+        if (hasStructuredData) {
             return lines.join("\n");
         }
 
@@ -70,16 +82,16 @@ const detectPayloadFormat = (str: string): string => {
     try {
         JSON.parse(trimmed);
         return "json";
-    } catch (e) {
-        // use js highlight for code-like content
-        if (
+    } catch {
+        const isCodeLike =
             trimmed.includes("{") ||
             trimmed.includes(";") ||
             trimmed.includes("function") ||
             trimmed.includes("=>") ||
             trimmed.includes("class") ||
-            trimmed.includes("import")
-        ) {
+            trimmed.includes("import");
+
+        if (isCodeLike) {
             return "javascript";
         }
     }
@@ -109,19 +121,17 @@ const splitPayloads = (body: string): string[] => {
             if (char === "[") inArray++;
             if (char === "]") inArray--;
 
-            if (inObject === 0 && inArray === 0) {
-                if (
-                    char === "\n" ||
-                    (char === "}" && body[i + 1] === "\n") ||
-                    (char === "}" && i === body.length - 1) ||
-                    (char === "]" && body[i + 1] === "\n") ||
-                    (char === "]" && i === body.length - 1)
-                ) {
-                    if (currentPayload.trim()) {
-                        payloads.push(currentPayload.trim());
-                        currentPayload = "";
-                    }
-                }
+            const isBalanced = inObject === 0 && inArray === 0;
+            const isEndChar =
+                char === "\n" ||
+                (char === "}" && body[i + 1] === "\n") ||
+                (char === "}" && i === body.length - 1) ||
+                (char === "]" && body[i + 1] === "\n") ||
+                (char === "]" && i === body.length - 1);
+
+            if (isBalanced && isEndChar && currentPayload.trim()) {
+                payloads.push(currentPayload.trim());
+                currentPayload = "";
             }
         }
 
@@ -141,9 +151,11 @@ const highlightPayload = async (payload: string): Promise<string> => {
 
     try {
         const formatted = await formatCode(payload, format);
+
         if (formatted.length > 1000000) {
             return `// payload truncated for perf\n${formatted.slice(0, 1000000)}...`;
         }
+
         if (typeof window !== "undefined") {
             return Prism.highlight(
                 formatted,
@@ -151,13 +163,21 @@ const highlightPayload = async (payload: string): Promise<string> => {
                 format
             );
         }
+
         return formatted;
-    } catch (e) {
+    } catch {
         return payload;
     }
 };
 
-export function CodeBlock({ language, value }: { language: string; value: string }) {
+interface CodeBlockProps {
+    language: string;
+    value: string;
+}
+
+export const CodeBlock = (props: CodeBlockProps) => {
+    const { language, value } = props;
+
     const [isWrapped, setIsWrapped] = useState(true);
     const [isBeautified, setIsBeautified] = useState(true);
     const [formattedContent, setFormattedContent] = useState<{
@@ -167,14 +187,15 @@ export function CodeBlock({ language, value }: { language: string; value: string
     }>({ firstLine: "", headers: "", body: "" });
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLPreElement>) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "a") {
-            e.preventDefault();
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(e.currentTarget);
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-        }
+        const isSelectAll = (e.ctrlKey || e.metaKey) && e.key === "a";
+        if (!isSelectAll) return;
+
+        e.preventDefault();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(e.currentTarget);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
     };
 
     useEffect(() => {
@@ -188,9 +209,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
 
             const modifiedFirstLine = firstLine.replace(
                 /(GET|POST|PUT|DELETE|PATCH) (https?:\/\/[^\/]+)(\S+)/,
-                (_, method, domain, path) => {
-                    return `${method} ${path}`;
-                }
+                (_, method, domain, path) => `${method} ${path}`
             );
 
             const otherHeaders = headerLines.slice(1);
@@ -200,8 +219,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
                 const format = detectPayloadFormat(body);
 
                 if (isBeautified) {
-                    const formatted = await formatCode(body, format);
-                    processedBody = formatted;
+                    processedBody = await formatCode(body, format);
                 } else {
                     const payloads = splitPayloads(body);
                     const formattedPayloads = await Promise.all(
@@ -273,9 +291,7 @@ export function CodeBlock({ language, value }: { language: string; value: string
                     <PrismHighlight code={formattedContent.firstLine} language={language} />
                     <div className="my-2 border-b border-border/40" />
                     {formattedContent.headers && (
-                        <>
-                            <PrismHighlight code={formattedContent.headers} language={language} />
-                        </>
+                        <PrismHighlight code={formattedContent.headers} language={language} />
                     )}
                     {formattedContent.body && (
                         <>
@@ -290,4 +306,4 @@ export function CodeBlock({ language, value }: { language: string; value: string
             </pre>
         </div>
     );
-}
+};

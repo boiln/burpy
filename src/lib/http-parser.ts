@@ -10,17 +10,12 @@ export interface HttpParser<T> {
 
 export class BurpParser implements HttpParser<BurpEntry> {
     private decodeBase64(str: string): string {
-        if (!str || typeof str !== "string") {
-            return "";
-        }
+        if (!str || typeof str !== "string") return "";
 
         const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-        if (!base64Regex.test(str)) {
-            return str;
-        }
+        if (!base64Regex.test(str)) return str;
 
         try {
-            // handle base64 padding
             let paddedStr = str;
             while (paddedStr.length % 4 !== 0) {
                 paddedStr += "=";
@@ -67,13 +62,10 @@ export class BurpParser implements HttpParser<BurpEntry> {
     }
 
     validate(raw: unknown): raw is BurpEntry {
-        if (!raw || typeof raw !== "object") {
-            return false;
-        }
+        if (!raw || typeof raw !== "object") return false;
 
         const entry = raw as BurpEntry;
 
-        // validate burp request structure
         const hasValidRequest =
             entry.request &&
             typeof entry.request === "object" &&
@@ -111,7 +103,6 @@ export class BurpParser implements HttpParser<BurpEntry> {
             const requestHeaders = getElementContent("requestheaders");
             const responseHeaders = getElementContent("responseheaders");
 
-            // default status to 0 if invalid
             const statusText = getElementContent("status");
             const status = statusText ? parseInt(statusText, 10) : 0;
 
@@ -164,13 +155,10 @@ export class HarParser implements HttpParser<HarEntry> {
     }
 
     validate(raw: unknown): raw is HarEntry {
-        if (!raw || typeof raw !== "object") {
-            return false;
-        }
+        if (!raw || typeof raw !== "object") return false;
 
         const entry = raw as HarEntry;
 
-        // validate har request structure
         const hasValidRequest =
             entry.request &&
             typeof entry.request === "object" &&
@@ -241,9 +229,9 @@ export class HttpMessageParser {
     }
 }
 
-export function createDefaultParser() {
+export const createDefaultParser = () => {
     const parser = new HttpMessageParser();
     parser.registerParser("application/har+json", new HarParser());
     parser.registerParser("application/vnd.burp.suite.item", new BurpParser());
     return parser;
-}
+};
