@@ -23,15 +23,13 @@ const SortableHeader = ({ column, label }: { column: any; label: string }) => (
     </Button>
 );
 
-// We need to pass searchTerm through table meta
 export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
     {
         accessorKey: "index",
         header: ({ column }) => <SortableHeader column={column} label="#" />,
         cell: ({ row }) => <div className="font-mono">{row.getValue("index")}</div>,
         size: 40,
-        minSize: 35,
-        maxSize: 50,
+        minSize: 30,
     },
     {
         accessorKey: "host",
@@ -42,8 +40,7 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
             </div>
         ),
         size: 220,
-        minSize: 120,
-        maxSize: 300,
+        minSize: 60,
     },
     {
         accessorKey: "method",
@@ -54,8 +51,7 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
             </div>
         ),
         size: 85,
-        minSize: 60,
-        maxSize: 100,
+        minSize: 50,
     },
     {
         accessorKey: "url",
@@ -74,8 +70,7 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
             </div>
         ),
         size: 500,
-        minSize: 200,
-        maxSize: 600,
+        minSize: 80,
     },
     {
         accessorKey: "status",
@@ -86,7 +81,6 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
         },
         size: 80,
         minSize: 50,
-        maxSize: 90,
     },
     {
         accessorKey: "mimeType",
@@ -97,16 +91,14 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
             </div>
         ),
         size: 175,
-        minSize: 150,
-        maxSize: 225,
+        minSize: 60,
     },
     {
         accessorKey: "length",
         header: ({ column }) => <SortableHeader column={column} label="Length" />,
         cell: ({ row }) => <div className="font-mono">{row.getValue("length")}</div>,
         size: 70,
-        minSize: 90,
-        maxSize: 100,
+        minSize: 50,
     },
     {
         accessorKey: "time",
@@ -115,8 +107,7 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
             <div className="whitespace-nowrap font-mono">{getEntryTime(row.original.entry)}</div>
         ),
         size: 90,
-        minSize: 70,
-        maxSize: 120,
+        minSize: 50,
     },
 ];
 

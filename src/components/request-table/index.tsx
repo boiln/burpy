@@ -7,6 +7,7 @@ import {
     getSortedRowModel,
     useReactTable,
     type SortingState,
+    type ColumnSizingState,
 } from "@tanstack/react-table";
 
 import {
@@ -41,10 +42,10 @@ export const RequestTable = (props: RequestTableProps) => {
     const { session } = props;
 
     const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
     const { selectedEntry, selectedEntries, searchTerm, handleMultiSelectEntry } = useSession();
     const tableRef = useRef<HTMLDivElement>(null);
 
-    // Memoize columns with search term for highlighting
     const tableColumns = useMemo(() => createColumns(searchTerm), [searchTerm]);
 
     const data = useMemo(() => {
@@ -61,12 +62,11 @@ export const RequestTable = (props: RequestTableProps) => {
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         onSortingChange: setSorting,
-        state: { sorting },
+        onColumnSizingChange: setColumnSizing,
+        state: { sorting, columnSizing },
         columnResizeMode: "onChange",
         defaultColumn: {
             minSize: 20,
-            maxSize: 1000,
-            size: 100,
         },
     });
 
@@ -228,19 +228,18 @@ const handleShiftClick = (
 
 const TableHeader_ = ({ table }: { table: any }) => (
     <div className="border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="overflow-hidden">
+        <div className="scrollbar-hide overflow-x-auto">
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup: any) => (
                         <TableRow key={headerGroup.id} className="flex">
-                            {headerGroup.headers.map((header: any) => (
+                            {headerGroup.headers.map((header: any, index: number) => (
                                 <TableHead
                                     key={header.id}
-                                    className="h-7 flex-shrink-0"
+                                    className="group relative h-7 flex-shrink-0"
                                     style={{
                                         width: header.column.getSize(),
                                         minWidth: header.column.columnDef.minSize,
-                                        maxWidth: header.column.columnDef.maxSize,
                                     }}
                                 >
                                     {header.isPlaceholder
@@ -249,6 +248,20 @@ const TableHeader_ = ({ table }: { table: any }) => (
                                               header.column.columnDef.header,
                                               header.getContext()
                                           )}
+                                    {header.column.getCanResize() &&
+                                        index < headerGroup.headers.length - 1 && (
+                                            <div
+                                                onMouseDown={header.getResizeHandler()}
+                                                onTouchStart={header.getResizeHandler()}
+                                                onDoubleClick={() => header.column.resetSize()}
+                                                className={cn(
+                                                    "absolute bottom-0 right-0 h-4 w-[4px] cursor-col-resize touch-none select-none",
+                                                    "border-r border-border",
+                                                    header.column.getIsResizing() &&
+                                                        "border-primary"
+                                                )}
+                                            />
+                                        )}
                                 </TableHead>
                             ))}
                         </TableRow>
@@ -275,67 +288,77 @@ const TableBody_ = (props: TableBodyProps) => {
     const rows = table.getRowModel().rows;
 
     return (
-        <div className="flex-1 overflow-auto" ref={tableRef} tabIndex={0} onKeyDown={onKeyDown}>
-            <div className="min-w-max">
-                <Table>
-                    <TableBody>
-                        {rows?.length ? (
-                            rows.map((row: any, index: number) => (
-                                <RequestContextMenu key={row.id} entry={row.original.entry}>
-                                    <TableRow
-                                        data-row-index={index}
-                                        data-state={
-                                            selectedEntries.has(row.original.entry)
-                                                ? "selected"
-                                                : undefined
-                                        }
-                                        data-highlight={row.original.entry.highlight || "none"}
-                                        className={cn(
-                                            "instant-select flex",
-                                            selectedEntries.has(row.original.entry) && "bg-accent"
-                                        )}
-                                        onClick={(e) => onRowClick(e, row.original.entry)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                e.preventDefault();
-                                                handleMultiSelectEntry(
-                                                    row.original.entry,
-                                                    "single"
-                                                );
+        <div className="flex-1 overflow-hidden">
+            <div
+                className="scrollbar-hide h-full overflow-auto"
+                ref={tableRef}
+                tabIndex={0}
+                onKeyDown={onKeyDown}
+            >
+                <div className="min-w-max">
+                    <Table>
+                        <TableBody>
+                            {rows?.length ? (
+                                rows.map((row: any, index: number) => (
+                                    <RequestContextMenu key={row.id} entry={row.original.entry}>
+                                        <TableRow
+                                            data-row-index={index}
+                                            data-state={
+                                                selectedEntries.has(row.original.entry)
+                                                    ? "selected"
+                                                    : undefined
                                             }
-                                        }}
-                                        tabIndex={0}
-                                        role="row"
-                                        aria-selected={selectedEntries.has(row.original.entry)}
+                                            data-highlight={row.original.entry.highlight || "none"}
+                                            className={cn(
+                                                "instant-select flex",
+                                                selectedEntries.has(row.original.entry) &&
+                                                    "bg-accent"
+                                            )}
+                                            onClick={(e) => onRowClick(e, row.original.entry)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault();
+                                                    handleMultiSelectEntry(
+                                                        row.original.entry,
+                                                        "single"
+                                                    );
+                                                }
+                                            }}
+                                            tabIndex={0}
+                                            role="row"
+                                            aria-selected={selectedEntries.has(row.original.entry)}
+                                        >
+                                            {row.getVisibleCells().map((cell: any) => (
+                                                <TableCell
+                                                    key={cell.id}
+                                                    className="flex-shrink-0"
+                                                    style={{
+                                                        width: cell.column.getSize(),
+                                                        minWidth: cell.column.columnDef.minSize,
+                                                    }}
+                                                >
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </RequestContextMenu>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="h-24 text-center"
                                     >
-                                        {row.getVisibleCells().map((cell: any) => (
-                                            <TableCell
-                                                key={cell.id}
-                                                className="flex-shrink-0"
-                                                style={{
-                                                    width: cell.column.getSize(),
-                                                    minWidth: cell.column.columnDef.minSize,
-                                                    maxWidth: cell.column.columnDef.maxSize,
-                                                }}
-                                            >
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                </RequestContextMenu>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                                        No results.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );
