@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+
 import {
     flexRender,
     getCoreRowModel,
@@ -10,6 +11,7 @@ import {
     type ColumnSizingState,
 } from "@tanstack/react-table";
 
+import { RequestContextMenu } from "@/components/request-context-menu";
 import {
     Table,
     TableBody,
@@ -18,9 +20,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { RequestContextMenu } from "@/components/request-context-menu";
-import { cn } from "@/lib/utils";
-import { useSession } from "@/lib/session-context";
 import {
     isHarSession,
     getEntryId,
@@ -28,11 +27,14 @@ import {
     parseUrl,
     getResponseInfo,
 } from "@/lib/entry-utils";
-
-import { columns, createColumns } from "./columns";
-import type { RequestData } from "./types";
+import { useSession } from "@/lib/session-context";
+import { cn } from "@/lib/utils";
 import type { BurpSession, BurpEntry } from "@/types/burp";
 import type { HarSession, HarEntry } from "@/types/har";
+
+import { columns, createColumns } from "./columns";
+
+import type { RequestData } from "./types";
 
 interface RequestTableProps {
     session: BurpSession | HarSession | null;

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
+
 import { Upload } from "lucide-react";
 
+import { BurpParser, createDefaultParser } from "@/lib/http-parser";
+import { cn } from "@/lib/utils";
 import type { BurpSession } from "@/types/burp";
 import type { HarEntry, HarSession } from "@/types/har";
-import { cn } from "@/lib/utils";
-import { BurpParser, createDefaultParser } from "@/lib/http-parser";
 
 interface FileUploadProps {
     onSessionLoaded: (session: BurpSession | HarSession) => void;

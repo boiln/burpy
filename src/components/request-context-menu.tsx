@@ -1,3 +1,8 @@
+import { useState, useRef, useEffect } from "react";
+
+import { Palette, MessageSquareMore, Link2, Globe, Clock, Terminal } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
     ContextMenu,
     ContextMenuContent,
@@ -15,15 +20,12 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { BurpEntry } from "@/types/burp";
-import { HarEntry } from "@/types/har";
-import { Palette, MessageSquareMore, Link2, Globe, Clock, Terminal } from "lucide-react";
-import { useSession } from "@/lib/session-context";
-import type { HighlightColor } from "@/types/burp";
-import { toCurl } from "@/lib/to-curl";
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "@/lib/session-context";
+import { toCurl } from "@/lib/to-curl";
+import { BurpEntry } from "@/types/burp";
+import type { HighlightColor } from "@/types/burp";
+import { HarEntry } from "@/types/har";
 
 interface RequestContextMenuProps {
     children: React.ReactNode;

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { WrapText } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { PrismHighlight } from "@/components/prism-highlight";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { detectPayloadFormat, parseHttpMessage, processBody } from "@/lib/code-formatting";
+import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {
     language: string;

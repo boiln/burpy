@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-import type { BurpEntry } from "@/types/burp";
+import type { BurpEntry , HighlightColor } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
-import type { HighlightColor } from "@/types/burp";
 
 interface SessionContextType {
     selectedEntry: BurpEntry | HarEntry | null;

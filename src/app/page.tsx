@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+
 import { Search, X } from "lucide-react";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Input } from "@/components/ui/input";
+
+import FileUpload, { FileUploadRef } from "@/components/file-upload";
 import { RequestTable } from "@/components/request-table";
 import { RequestViewer } from "@/components/request-viewer";
 import { ResponseViewer } from "@/components/response-viewer";
-import FileUpload, { FileUploadRef } from "@/components/file-upload";
-import { useSession } from "@/lib/session-context";
+import { Input } from "@/components/ui/input";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useSearch } from "@/hooks/use-search";
+import { useSession } from "@/lib/session-context";
 import { BurpSession } from "@/types/burp";
 import { HarSession } from "@/types/har";
 

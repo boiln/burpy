@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useDebounce } from "./use-debounce";
+
 import { useSession } from "@/lib/session-context";
 import type { BurpEntry } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
+
+import { useDebounce } from "./use-debounce";
 
 type Entry = BurpEntry | HarEntry;
 

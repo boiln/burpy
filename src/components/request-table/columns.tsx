@@ -1,13 +1,14 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Highlight } from "@/components/ui/highlight";
-import { cn } from "@/lib/utils";
 import { getEntryTime } from "@/lib/entry-utils";
+import { cn } from "@/lib/utils";
+
 import type { RequestData } from "./types";
+import type { ColumnDef } from "@tanstack/react-table";
 
 /**
  * Creates a sortable header button component
