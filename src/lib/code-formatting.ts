@@ -1,9 +1,10 @@
-/**
- * Code formatting and detection utilities for HTTP payloads
- */
+import prettier from "prettier/standalone";
+import babelPlugin from "prettier/plugins/babel";
+import estreePlugin from "prettier/plugins/estree";
+import htmlPlugin from "prettier/plugins/html";
 
 /**
- * Detects the format of a payload string (json, javascript, or text)
+ * Detects the format of a payload string (json, html, javascript, or text)
  */
 export const detectPayloadFormat = (str: string): string => {
     const trimmed = str.trim();
@@ -13,6 +14,11 @@ export const detectPayloadFormat = (str: string): string => {
         JSON.parse(trimmed);
         return "json";
     } catch {
+        // Check for HTML/XML
+        if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+            return "html";
+        }
+
         const codeIndicators = ["{", ";", "function", "=>", "class", "import"];
         const isCodeLike = codeIndicators.some((indicator) => trimmed.includes(indicator));
 
@@ -23,61 +29,31 @@ export const detectPayloadFormat = (str: string): string => {
 };
 
 /**
- * Formats code string based on detected format
+ * Formats code string using Prettier based on detected format
  */
 export const formatCode = async (str: string, format: string): Promise<string> => {
     try {
-        if (format === "json") {
-            return formatJson(str);
-        }
+        const parserMap: Record<string, string> = {
+            json: "json",
+            javascript: "babel",
+            html: "html",
+        };
 
-        return formatLines(str);
+        const parser = parserMap[format];
+        if (!parser) return str;
+
+        const formatted = await prettier.format(str, {
+            parser,
+            plugins: [babelPlugin, estreePlugin, htmlPlugin],
+            tabWidth: 4,
+            printWidth: 100,
+        });
+
+        return formatted.trim();
     } catch (e) {
         console.warn("Formatting failed:", e);
         return str;
     }
-};
-
-/**
- * Formats JSON strings, handling both single objects and line-separated objects
- */
-const formatJson = (str: string): string => {
-    try {
-        const parsed = JSON.parse(str);
-        return JSON.stringify(parsed, null, 4);
-    } catch {
-        const trimmed = str.trim();
-        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
-            return str;
-        }
-
-        const lines = str
-            .split(/\n/)
-            .map((line) => line.trim())
-            .filter(Boolean);
-
-        const formattedLines = lines.map((line) => {
-            try {
-                const parsed = JSON.parse(line);
-                return JSON.stringify(parsed, null, 4);
-            } catch {
-                return line;
-            }
-        });
-
-        return formattedLines.join("\n\n");
-    }
-};
-
-/**
- * Formats lines of text, preserving structure
- */
-const formatLines = (str: string): string => {
-    const lines = str
-        .split(/\n/)
-        .map((line) => line.trim())
-        .filter(Boolean);
-    return lines.join("\n");
 };
 
 /**
