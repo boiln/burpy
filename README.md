@@ -1,17 +1,17 @@
 # Burpy - HTTP session viewer
 
-A modern, fast, and user-friendly web application for viewing saved HTTP session files.
+A modern, fast, and user-friendly web application for viewing saved HTTP .har/.xml saved session files.
 
-Burpy (12.2.25)
+Burpy (12.8.25)
 
-https://github.com/user-attachments/assets/d41f5f21-ff09-4ad5-92a0-cdd402a8d5ec
+https://github.com/user-attachments/assets/b694ec63-a560-4171-98c3-bcb2eab9ceea
 
 ## Features
 
 -   Fast and responsive
 -   Syntax highlighting
--   Dark theme support
--   JSON formatting
+-   Dark theme
+-   Formatter
 -   Search
 
 ## Getting Started
