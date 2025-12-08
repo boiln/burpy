@@ -42,7 +42,15 @@ export const isHarResponse = (response: unknown): response is HarResponse => {
  */
 export const getEntryTime = (entry: BurpEntry | HarEntry): string => {
     const timestamp = "startTime" in entry ? entry.startTime : entry.startedDateTime;
-    return timestamp ? new Date(timestamp).toLocaleTimeString() : "-";
+    if (!timestamp) return "-";
+
+    const date = new Date(timestamp);
+    const time = date.toLocaleTimeString();
+    const month = date.toLocaleDateString(undefined, { month: "short" });
+    const day = date.getDate();
+    const year = date.getFullYear();
+
+    return `${time} ${month} ${day}, ${year}`;
 };
 
 /**
