@@ -66,6 +66,58 @@ export const detectPayloadFormat = (str: string, mimeType?: string): string => {
 };
 
 /**
+ * Extracts JSON from a line that may have a prefix (e.g., "0:{...}" or "data: {...}")
+ * Returns the JSON portion if found, otherwise returns the original line
+ */
+const extractJsonFromLine = (line: string): string => {
+    const trimmed = line.trim();
+    if (!trimmed) return trimmed;
+
+    const rscMatch = trimmed.match(/^\d+:(.+)$/);
+    if (rscMatch) return rscMatch[1];
+
+    const sseMatch = trimmed.match(/^data:\s*(.+)$/);
+    if (sseMatch) return sseMatch[1];
+
+    return trimmed;
+};
+
+/**
+ * Attempts to format content as newline-delimited JSON (NDJSON)
+ * Each line is formatted separately if it contains valid JSON
+ */
+const formatNdjson = async (str: string): Promise<string | null> => {
+    const lines = str.split("\n").filter((line) => line.trim());
+    if (lines.length < 2) return null;
+
+    const formattedLines: string[] = [];
+    let hasFormattedAny = false;
+
+    for (const line of lines) {
+        const jsonPart = extractJsonFromLine(line);
+        const prefix = line.trim().slice(0, line.trim().length - jsonPart.length);
+
+        try {
+            JSON.parse(jsonPart);
+
+            const formatted = await prettier.format(jsonPart, {
+                parser: "json",
+                plugins: [babelPlugin, estreePlugin],
+                tabWidth: 4,
+                printWidth: 100,
+            });
+
+            formattedLines.push(prefix + formatted.trim());
+            hasFormattedAny = true;
+        } catch {
+            formattedLines.push(line.trim());
+        }
+    }
+
+    return hasFormattedAny ? formattedLines.join("\n\n") : null;
+};
+
+/**
  * Formats code string using Prettier based on detected format
  */
 export const formatCode = async (str: string, format: string): Promise<string> => {
@@ -79,7 +131,11 @@ export const formatCode = async (str: string, format: string): Promise<string> =
         };
 
         const parser = parserMap[format];
-        if (!parser) return str;
+        if (!parser) {
+            const ndjsonResult = await formatNdjson(str);
+            if (ndjsonResult) return ndjsonResult;
+            return str;
+        }
 
         const formatted = await prettier.format(str, {
             parser,
@@ -90,6 +146,9 @@ export const formatCode = async (str: string, format: string): Promise<string> =
 
         return formatted.trim();
     } catch (e) {
+        const ndjsonResult = await formatNdjson(str);
+        if (ndjsonResult) return ndjsonResult;
+
         console.warn("Formatting failed:", e);
         return str;
     }
