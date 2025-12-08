@@ -1,22 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useSession } from "@/lib/session-context";
 import type { BurpEntry } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
 
-import { useDebounce } from "./use-debounce";
-
 type Entry = BurpEntry | HarEntry;
 
 interface SearchResult {
     filteredEntries: Entry[];
-    isSearching: boolean;
-}
-
-interface UseSearchOptions {
-    debounceMs?: number;
 }
 
 /**
@@ -42,30 +35,16 @@ const tryDecodeBase64 = (str: string): string => {
 
 /**
  * Fast in-memory search using simple string matching.
- * For most use cases (even 1000s of requests), this is fast enough.
  */
-export const useSearch = (entries: Entry[], options: UseSearchOptions = {}): SearchResult => {
-    const { debounceMs = 150 } = options;
-
+export const useSearch = (entries: Entry[]): SearchResult => {
     const { searchTerm } = useSession();
-    const [isSearching, setIsSearching] = useState(false);
-
-    const debouncedSearchTerm = useDebounce(searchTerm, debounceMs);
-
-    useEffect(() => {
-        if (searchTerm !== debouncedSearchTerm) {
-            setIsSearching(true);
-        } else {
-            setIsSearching(false);
-        }
-    }, [searchTerm, debouncedSearchTerm]);
 
     const filteredEntries = useMemo(() => {
-        if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) {
+        if (!searchTerm || searchTerm.length < 2) {
             return entries;
         }
 
-        const lowerSearch = debouncedSearchTerm.toLowerCase();
+        const lowerSearch = searchTerm.toLowerCase();
 
         return entries.filter((entry) => {
             const url = entry.request?.url?.toLowerCase() || "";
@@ -129,10 +108,9 @@ export const useSearch = (entries: Entry[], options: UseSearchOptions = {}): Sea
 
             return false;
         });
-    }, [entries, debouncedSearchTerm]);
+    }, [entries, searchTerm]);
 
     return {
         filteredEntries,
-        isSearching,
     };
 };
