@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { CodeBlock } from "@/components/code-block";
+import { getResponseMimeType } from "@/lib/entry-utils";
 import { createDefaultParser } from "@/lib/http-parser";
 import { useSession } from "@/lib/session-context";
 
@@ -12,9 +13,7 @@ export const ResponseViewer = () => {
 
     if (!selectedEntry) return null;
 
-    // Get mimeType from response (handles both HAR and Burp formats)
-    const response = selectedEntry.response;
-    const mimeType = "content" in response ? response.content?.mimeType : response.mimeType;
+    const mimeType = getResponseMimeType(selectedEntry.response);
 
     try {
         const { response: parsedResponse } = parser.parse(selectedEntry);

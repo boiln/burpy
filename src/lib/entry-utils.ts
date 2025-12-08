@@ -2,7 +2,7 @@
  * Utility functions for working with Burp and HAR entries
  */
 
-import type { BurpSession, BurpEntry } from "@/types/burp";
+import type { BurpSession, BurpEntry, BurpResponse } from "@/types/burp";
 import type { HarSession, HarEntry, HarResponse } from "@/types/har";
 
 /**
@@ -23,6 +23,13 @@ export const isHarSession = (session: BurpSession | HarSession): session is HarS
 };
 
 /**
+ * Type guard to check if entry is HAR format
+ */
+export const isHarEntry = (entry: BurpEntry | HarEntry): entry is HarEntry => {
+    return "httpVersion" in entry.request;
+};
+
+/**
  * Type guard to check if response is HAR format
  */
 export const isHarResponse = (response: unknown): response is HarResponse => {
@@ -31,7 +38,7 @@ export const isHarResponse = (response: unknown): response is HarResponse => {
 };
 
 /**
- * Get timestamp from entry (handles both Burp and HAR formats)
+ * Get timestamp from entry
  */
 export const getEntryTime = (entry: BurpEntry | HarEntry): string => {
     const timestamp = "startTime" in entry ? entry.startTime : entry.startedDateTime;
@@ -39,7 +46,7 @@ export const getEntryTime = (entry: BurpEntry | HarEntry): string => {
 };
 
 /**
- * Get unique ID from entry (handles both Burp and HAR formats)
+ * Get unique ID from entry
  */
 export const getEntryId = (entry: BurpEntry | HarEntry): string => {
     return "startTime" in entry ? entry.startTime : entry.startedDateTime;
@@ -96,4 +103,24 @@ export const getResponseInfo = (
         mimeType: entry.response.mimeType || "unknown",
         contentLength: entry.response.contentLength || 0,
     };
+};
+
+/**
+ * Get response mimeType from entry
+ */
+export const getResponseMimeType = (response: BurpResponse | HarResponse): string | undefined => {
+    if ("content" in response) {
+        return response.content?.mimeType;
+    }
+    return response.mimeType;
+};
+
+/**
+ * Get request mimeType from entry (for POST data)
+ */
+export const getRequestMimeType = (entry: BurpEntry | HarEntry): string | undefined => {
+    if (isHarEntry(entry)) {
+        return entry.request.postData?.mimeType;
+    }
+    return undefined;
 };

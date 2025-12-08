@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { CodeBlock } from "@/components/code-block";
+import { getRequestMimeType } from "@/lib/entry-utils";
 import { createDefaultParser } from "@/lib/http-parser";
 import { useSession } from "@/lib/session-context";
 
@@ -12,9 +13,7 @@ export const RequestViewer = () => {
 
     if (!selectedEntry) return null;
 
-    // Get mimeType from request postData (if available)
-    const request = selectedEntry.request;
-    const mimeType = "postData" in request ? request.postData?.mimeType : undefined;
+    const mimeType = getRequestMimeType(selectedEntry);
 
     try {
         const { request: parsedRequest } = parser.parse(selectedEntry);
