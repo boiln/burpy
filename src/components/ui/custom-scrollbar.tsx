@@ -50,7 +50,8 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
             scrollState.scrollHeight > 0
                 ? Math.max(
                       30,
-                      (scrollState.clientHeight / scrollState.scrollHeight) * scrollState.clientHeight
+                      (scrollState.clientHeight / scrollState.scrollHeight) *
+                          scrollState.clientHeight
                   )
                 : 0;
         const thumbTop =
@@ -101,7 +102,7 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
         return (
             <div className={cn("flex h-full", className)}>
                 <div
-                    className="flex-1 overflow-y-scroll overflow-x-hidden scrollbar-hide"
+                    className="scrollbar-hide flex-1 overflow-x-hidden overflow-y-scroll"
                     ref={containerRef as React.RefObject<HTMLDivElement>}
                     tabIndex={tabIndex}
                     onKeyDown={onKeyDown}
@@ -111,12 +112,12 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
                 {/* Custom scrollbar track */}
                 <div
                     ref={trackRef}
-                    className="w-3 bg-muted border-l border-border flex-shrink-0 relative cursor-pointer"
+                    className="relative w-3 flex-shrink-0 cursor-pointer border-l border-border bg-muted"
                     onMouseDown={handleTrackMouseDown}
                 >
                     {showScrollbar && (
                         <div
-                            className="absolute left-0 right-0 bg-foreground/30 hover:bg-foreground/50 rounded-full mx-0.5 cursor-grab active:cursor-grabbing transition-colors"
+                            className="absolute left-0 right-0 mx-0.5 cursor-grab rounded-full bg-foreground/30 transition-colors hover:bg-foreground/50 active:cursor-grabbing"
                             style={{
                                 height: thumbHeight,
                                 top: thumbTop,

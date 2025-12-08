@@ -295,12 +295,7 @@ const TableBody_ = (props: TableBodyProps) => {
 
     return (
         <div className="flex-1 overflow-hidden">
-            <CustomScrollbar
-                className="h-full"
-                ref={tableRef}
-                tabIndex={0}
-                onKeyDown={onKeyDown}
-            >
+            <CustomScrollbar className="h-full" ref={tableRef} tabIndex={0} onKeyDown={onKeyDown}>
                 <div className="min-w-max">
                     <Table>
                         <TableBody>

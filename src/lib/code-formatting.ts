@@ -114,16 +114,9 @@ const formatNdjson = async (str: string): Promise<string | null> => {
         const prefix = line.trim().slice(0, line.trim().length - jsonPart.length);
 
         try {
-            JSON.parse(jsonPart);
-
-            const formatted = await prettier.format(jsonPart, {
-                parser: "json",
-                plugins: [babelPlugin, estreePlugin],
-                tabWidth: 4,
-                printWidth: 100,
-            });
-
-            formattedLines.push(prefix + formatted.trim());
+            const parsed = JSON.parse(jsonPart);
+            const formatted = JSON.stringify(parsed, null, 4);
+            formattedLines.push(prefix + formatted);
             hasFormattedAny = true;
         } catch {
             formattedLines.push(line.trim());
@@ -140,6 +133,15 @@ export const formatCode = async (str: string, format: string): Promise<string> =
     try {
         if (format === "urlencoded") {
             return str;
+        }
+
+        if (format === "json") {
+            try {
+                const parsed = JSON.parse(str);
+                return JSON.stringify(parsed, null, 4);
+            } catch {
+                // If JSON parsing fails, fall through to prettier
+            }
         }
 
         const parserMap: Record<string, string> = {

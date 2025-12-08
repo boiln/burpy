@@ -76,7 +76,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
 
             <pre
                 className={cn(
-                    "flex-1 overflow-auto rounded-md !bg-background/95 p-3 text-sm leading-normal",
+                    "flex-1 rounded-md !bg-background/95 p-3 text-sm leading-normal",
                     isWrapped && "whitespace-pre-wrap break-words"
                 )}
                 tabIndex={0}
