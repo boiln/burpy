@@ -12,12 +12,16 @@ export const ResponseViewer = () => {
 
     if (!selectedEntry) return null;
 
+    // Get mimeType from response (handles both HAR and Burp formats)
+    const response = selectedEntry.response;
+    const mimeType = "content" in response ? response.content?.mimeType : response.mimeType;
+
     try {
-        const { response } = parser.parse(selectedEntry);
+        const { response: parsedResponse } = parser.parse(selectedEntry);
 
         return (
             <div className="h-full overflow-auto p-2">
-                <CodeBlock language="http" value={response} />
+                <CodeBlock language="http" value={parsedResponse} mimeType={mimeType} />
             </div>
         );
     } catch (error) {

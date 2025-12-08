@@ -12,12 +12,16 @@ export const RequestViewer = () => {
 
     if (!selectedEntry) return null;
 
+    // Get mimeType from request postData (if available)
+    const request = selectedEntry.request;
+    const mimeType = "postData" in request ? request.postData?.mimeType : undefined;
+
     try {
-        const { request } = parser.parse(selectedEntry);
+        const { request: parsedRequest } = parser.parse(selectedEntry);
 
         return (
             <div className="h-full overflow-auto p-2">
-                <CodeBlock language="http" value={request} />
+                <CodeBlock language="http" value={parsedRequest} mimeType={mimeType} />
             </div>
         );
     } catch (error) {

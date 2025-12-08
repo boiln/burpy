@@ -2,11 +2,45 @@ import prettier from "prettier/standalone";
 import babelPlugin from "prettier/plugins/babel";
 import estreePlugin from "prettier/plugins/estree";
 import htmlPlugin from "prettier/plugins/html";
+import cssPlugin from "prettier/plugins/postcss";
 
 /**
- * Detects the format of a payload string (json, html, javascript, or text)
+ * Map MIME types to format identifiers
  */
-export const detectPayloadFormat = (str: string): string => {
+const mimeToFormat: Record<string, string> = {
+    "application/json": "json",
+    "text/json": "json",
+    "application/ld+json": "json",
+    "application/hal+json": "json",
+    "application/vnd.api+json": "json",
+    "text/html": "html",
+    "application/xhtml+xml": "html",
+    "text/xml": "xml",
+    "application/xml": "xml",
+    "application/rss+xml": "xml",
+    "application/atom+xml": "xml",
+    "text/javascript": "javascript",
+    "application/javascript": "javascript",
+    "application/x-javascript": "javascript",
+    "text/css": "css",
+};
+
+/**
+ * Detects the format of a payload string, optionally using mimeType hint
+ */
+export const detectPayloadFormat = (str: string, mimeType?: string): string => {
+    // 1. Trust mimeType if provided and recognized
+    if (mimeType) {
+        const baseMime = mimeType.split(";")[0].trim().toLowerCase();
+        if (mimeToFormat[baseMime]) {
+            return mimeToFormat[baseMime];
+        }
+        // Handle common patterns like "application/something+json"
+        if (baseMime.endsWith("+json")) return "json";
+        if (baseMime.endsWith("+xml")) return "xml";
+    }
+
+    // 2. Fall back to content-based detection
     const trimmed = str.trim();
     if (!trimmed) return "text";
 
@@ -16,7 +50,10 @@ export const detectPayloadFormat = (str: string): string => {
     } catch {
         // Check for HTML/XML
         if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
-            return "html";
+            return trimmed.toLowerCase().includes("<!doctype html") ||
+                trimmed.toLowerCase().includes("<html")
+                ? "html"
+                : "xml";
         }
 
         const codeIndicators = ["{", ";", "function", "=>", "class", "import"];
@@ -37,6 +74,8 @@ export const formatCode = async (str: string, format: string): Promise<string> =
             json: "json",
             javascript: "babel",
             html: "html",
+            xml: "html",
+            css: "css",
         };
 
         const parser = parserMap[format];
@@ -44,7 +83,7 @@ export const formatCode = async (str: string, format: string): Promise<string> =
 
         const formatted = await prettier.format(str, {
             parser,
-            plugins: [babelPlugin, estreePlugin, htmlPlugin],
+            plugins: [babelPlugin, estreePlugin, htmlPlugin, cssPlugin],
             tabWidth: 4,
             printWidth: 100,
         });
@@ -148,10 +187,14 @@ export const parseHttpMessage = (value: string) => {
 /**
  * Processes body content with optional beautification
  */
-export const processBody = async (body: string, beautify: boolean): Promise<string> => {
+export const processBody = async (
+    body: string,
+    beautify: boolean,
+    mimeType?: string
+): Promise<string> => {
     if (!body) return "";
 
-    const format = detectPayloadFormat(body);
+    const format = detectPayloadFormat(body, mimeType);
 
     if (beautify) {
         return formatCode(body, format);

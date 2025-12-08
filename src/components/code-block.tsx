@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 interface CodeBlockProps {
     language: string;
     value: string;
+    mimeType?: string;
 }
 
 interface FormattedContent {
@@ -21,7 +22,7 @@ interface FormattedContent {
 }
 
 export const CodeBlock = (props: CodeBlockProps) => {
-    const { language, value } = props;
+    const { language, value, mimeType } = props;
 
     const [isWrapped, setIsWrapped] = useState(true);
     const [isBeautified, setIsBeautified] = useState(true);
@@ -34,7 +35,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
     useEffect(() => {
         const update = async () => {
             const { requestLine, headers, body } = parseHttpMessage(value);
-            const processedBody = await processBody(body, isBeautified);
+            const processedBody = await processBody(body, isBeautified, mimeType);
 
             setContent({
                 requestLine,
@@ -44,7 +45,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
         };
 
         update();
-    }, [value, isBeautified]);
+    }, [value, isBeautified, mimeType]);
 
     const handleSelectAll = (e: React.KeyboardEvent<HTMLPreElement>) => {
         const isSelectAll = (e.ctrlKey || e.metaKey) && e.key === "a";
@@ -102,7 +103,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
                             <Divider />
                             <PrismHighlight
                                 code={content.body}
-                                language={detectPayloadFormat(content.body)}
+                                language={detectPayloadFormat(content.body, mimeType)}
                             />
                         </>
                     )}
