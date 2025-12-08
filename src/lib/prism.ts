@@ -10,6 +10,23 @@ import "prismjs/components/prism-yaml";
 import "prismjs/components/prism-xml-doc";
 
 if (typeof window !== "undefined") {
+    // URL-encoded form data language
+    Prism.languages.urlencoded = {
+        "form-param": {
+            pattern: /([^&=\n]+)=([^&\n]*)/g,
+            inside: {
+                "form-param-name": {
+                    pattern: /^[^=]+/,
+                },
+                "form-param-equals": /=/,
+                "form-param-value": {
+                    pattern: /(?<==).*/,
+                },
+            },
+        },
+        separator: /&/,
+    };
+
     Prism.languages.http = {
         "request-line": {
             pattern:
@@ -28,10 +45,11 @@ if (typeof window !== "undefined") {
                             inside: {
                                 "query-delimiter": /^\?/,
                                 "query-param": {
-                                    pattern: /([^&=]+)=([^&]*)/g,
+                                    pattern: /[^&]+/g,
                                     inside: {
                                         "param-name": /^[^=]+/,
-                                        "param-value": /(?<==)[^&]*/,
+                                        "param-equals": /=/,
+                                        "param-value": /[^=]+$/,
                                     },
                                 },
                                 "query-separator": /&/,

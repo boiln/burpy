@@ -23,6 +23,7 @@ const mimeToFormat: Record<string, string> = {
     "application/javascript": "javascript",
     "application/x-javascript": "javascript",
     "text/css": "css",
+    "application/x-www-form-urlencoded": "urlencoded",
 };
 
 /**
@@ -52,6 +53,10 @@ export const detectPayloadFormat = (str: string, mimeType?: string): string => {
                 : "xml";
         }
 
+        if (isUrlEncoded(trimmed)) {
+            return "urlencoded";
+        }
+
         const codeIndicators = ["{", ";", "function", "=>", "class", "import"];
         const isCodeLike = codeIndicators.some((indicator) => trimmed.includes(indicator));
 
@@ -59,6 +64,21 @@ export const detectPayloadFormat = (str: string, mimeType?: string): string => {
     }
 
     return "text";
+};
+
+/**
+ * Checks if a string looks like URL-encoded form data
+ */
+const isUrlEncoded = (str: string): boolean => {
+    // Must contain at least one key=value pair
+    if (!str.includes("=")) return false;
+
+    // Should not start with special characters that indicate other formats
+    if (str.startsWith("{") || str.startsWith("[") || str.startsWith("<")) return false;
+
+    // Check if it matches the pattern: key=value or key=value&key2=value2
+    const urlEncodedPattern = /^[^=&\s]+=[^&]*(&[^=&\s]+=[^&]*)*$/;
+    return urlEncodedPattern.test(str.split("\n")[0]); // Check first line only
 };
 
 /**
@@ -118,6 +138,10 @@ const formatNdjson = async (str: string): Promise<string | null> => {
  */
 export const formatCode = async (str: string, format: string): Promise<string> => {
     try {
+        if (format === "urlencoded") {
+            return str;
+        }
+
         const parserMap: Record<string, string> = {
             json: "json",
             javascript: "babel",

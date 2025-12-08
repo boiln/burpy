@@ -87,8 +87,13 @@ pre[class*="language-"] {
     color: #b0c3d0;
 }
 
+/* URL query params */
 .token.param-name {
     color: #bbcdff;
+}
+
+.token.param-equals {
+    color: #d4d4d4;
 }
 
 .token.param-value {
@@ -96,7 +101,24 @@ pre[class*="language-"] {
 }
 
 .token.query-separator {
-    color: #808080;
+    color: #d4d4d4;
+}
+
+/* Form data */
+.token.form-param-name {
+    color: #bbcdff;
+}
+
+.token.form-param-equals {
+    color: #d4d4d4;
+}
+
+.token.form-param-value {
+    color: #a5c35b;
+}
+
+.token.separator {
+    color: #d4d4d4;
 }
 
 /* Existing styles */
