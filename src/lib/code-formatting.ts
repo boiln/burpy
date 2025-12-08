@@ -29,18 +29,15 @@ const mimeToFormat: Record<string, string> = {
  * Detects the format of a payload string, optionally using mimeType hint
  */
 export const detectPayloadFormat = (str: string, mimeType?: string): string => {
-    // 1. Trust mimeType if provided and recognized
     if (mimeType) {
         const baseMime = mimeType.split(";")[0].trim().toLowerCase();
         if (mimeToFormat[baseMime]) {
             return mimeToFormat[baseMime];
         }
-        // Handle common patterns like "application/something+json"
         if (baseMime.endsWith("+json")) return "json";
         if (baseMime.endsWith("+xml")) return "xml";
     }
 
-    // 2. Fall back to content-based detection
     const trimmed = str.trim();
     if (!trimmed) return "text";
 
@@ -48,7 +45,6 @@ export const detectPayloadFormat = (str: string, mimeType?: string): string => {
         JSON.parse(trimmed);
         return "json";
     } catch {
-        // Check for HTML/XML
         if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
             return trimmed.toLowerCase().includes("<!doctype html") ||
                 trimmed.toLowerCase().includes("<html")
