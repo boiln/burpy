@@ -102,6 +102,17 @@ export const createColumns = (searchTerm: string): ColumnDef<RequestData>[] => [
         minSize: 50,
     },
     {
+        accessorKey: "cookies",
+        header: ({ column }) => <SortableHeader column={column} label="Cookies" />,
+        cell: ({ row }) => (
+            <div className="truncate font-mono">
+                <Highlight text={row.getValue("cookies")} searchTerm={searchTerm} />
+            </div>
+        ),
+        size: 200,
+        minSize: 60,
+    },
+    {
         accessorKey: "time",
         header: ({ column }) => <SortableHeader column={column} label="Time" />,
         cell: ({ row }) => (

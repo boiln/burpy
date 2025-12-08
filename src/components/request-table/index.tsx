@@ -26,6 +26,7 @@ import {
     getEntryTime,
     parseUrl,
     getResponseInfo,
+    getEntryCookies,
 } from "@/lib/entry-utils";
 import { useSession } from "@/lib/session-context";
 import { cn } from "@/lib/utils";
@@ -179,6 +180,7 @@ const transformEntry = (
             mimeType,
             length: contentLength,
             time: getEntryTime(entry),
+            cookies: getEntryCookies(entry),
             entry,
         };
     } catch (error) {
@@ -202,6 +204,7 @@ const createErrorEntry = (
     mimeType: "unknown",
     length: 0,
     time: "-",
+    cookies: "",
     entry,
 });
 

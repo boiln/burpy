@@ -12,5 +12,6 @@ export interface RequestData {
     mimeType: string;
     length: number;
     time: string;
+    cookies: string;
     entry: BurpEntry | HarEntry;
 }

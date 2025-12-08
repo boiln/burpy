@@ -132,3 +132,41 @@ export const getRequestMimeType = (entry: BurpEntry | HarEntry): string | undefi
     }
     return undefined;
 };
+
+/**
+ * Get cookies from response headers
+ */
+export const getEntryCookies = (entry: BurpEntry | HarEntry): string => {
+    if (!entry.response) return "";
+
+    if (isHarEntry(entry)) {
+        const headers = entry.response.headers || [];
+        const setCookieHeaders = headers.filter((h) => h.name.toLowerCase() === "set-cookie");
+
+        if (setCookieHeaders.length === 0) return "";
+
+        const cookies = setCookieHeaders.map((h) => {
+            const cookiePart = h.value.split(";")[0].trim();
+            return cookiePart;
+        });
+
+        return cookies.join("; ");
+    }
+
+    const responseText = entry.parsedResponse || entry.response.body || "";
+
+    const lines = responseText.split(/\r?\n/);
+    const cookies: string[] = [];
+
+    for (const line of lines) {
+        if (line.trim() === "") break;
+
+        if (line.toLowerCase().startsWith("set-cookie:")) {
+            const value = line.substring(11).trim();
+            const cookiePart = value.split(";")[0].trim();
+            cookies.push(cookiePart);
+        }
+    }
+
+    return cookies.join("; ");
+};
