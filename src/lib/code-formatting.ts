@@ -96,70 +96,6 @@ export const formatCode = async (str: string, format: string): Promise<string> =
 };
 
 /**
- * Splits a body string into separate payload chunks
- * Handles nested JSON objects and arrays
- */
-export const splitPayloads = (body: string): string[] => {
-    const payloads: string[] = [];
-    let currentPayload = "";
-    let inString = false;
-    let objectDepth = 0;
-    let arrayDepth = 0;
-    let lastChar = "";
-
-    for (let i = 0; i < body.length; i++) {
-        const char = body[i];
-        currentPayload += char;
-
-        // Track string boundaries
-        if (char === '"' && lastChar !== "\\") {
-            inString = !inString;
-        }
-
-        // Track nesting depth when not in string
-        if (!inString) {
-            if (char === "{") objectDepth++;
-            if (char === "}") objectDepth--;
-            if (char === "[") arrayDepth++;
-            if (char === "]") arrayDepth--;
-
-            const isBalanced = objectDepth === 0 && arrayDepth === 0;
-            const isPayloadEnd = isEndOfPayload(char, body, i);
-
-            if (isBalanced && isPayloadEnd && currentPayload.trim()) {
-                payloads.push(currentPayload.trim());
-                currentPayload = "";
-            }
-        }
-
-        lastChar = char;
-    }
-
-    // Don't forget remaining content
-    if (currentPayload.trim()) {
-        payloads.push(currentPayload.trim());
-    }
-
-    return payloads;
-};
-
-/**
- * Checks if current position is the end of a payload
- */
-const isEndOfPayload = (char: string, body: string, index: number): boolean => {
-    const nextChar = body[index + 1];
-    const isLastChar = index === body.length - 1;
-
-    return (
-        char === "\n" ||
-        (char === "}" && nextChar === "\n") ||
-        (char === "}" && isLastChar) ||
-        (char === "]" && nextChar === "\n") ||
-        (char === "]" && isLastChar)
-    );
-};
-
-/**
  * Parses HTTP message value into structured parts
  */
 export const parseHttpMessage = (value: string) => {
@@ -194,12 +130,10 @@ export const processBody = async (
 ): Promise<string> => {
     if (!body) return "";
 
-    const format = detectPayloadFormat(body, mimeType);
-
     if (beautify) {
+        const format = detectPayloadFormat(body, mimeType);
         return formatCode(body, format);
     }
 
-    const payloads = splitPayloads(body);
-    return payloads.join("\n");
+    return body;
 };
