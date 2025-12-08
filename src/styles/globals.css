@@ -100,20 +100,6 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-
-    /* Hide horizontal scrollbar only - cross-browser */
-    .scrollbar-hide-x {
-        overflow-x: auto;
-        overflow-y: auto;
-        padding-bottom: 20px;
-        margin-bottom: -20px;
-    }
-
-    /* Webkit browsers - cleaner approach */
-    .scrollbar-hide-x::-webkit-scrollbar:horizontal {
-        display: none;
-        height: 0;
-    }
 }
 
 ::selection {

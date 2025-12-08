@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 
 import { RequestContextMenu } from "@/components/request-context-menu";
+import { CustomScrollbar } from "@/components/ui/custom-scrollbar";
 import {
     Table,
     TableBody,
@@ -294,8 +295,8 @@ const TableBody_ = (props: TableBodyProps) => {
 
     return (
         <div className="flex-1 overflow-hidden">
-            <div
-                className="scrollbar-hide h-full overflow-auto"
+            <CustomScrollbar
+                className="h-full"
                 ref={tableRef}
                 tabIndex={0}
                 onKeyDown={onKeyDown}
@@ -364,7 +365,7 @@ const TableBody_ = (props: TableBodyProps) => {
                         </TableBody>
                     </Table>
                 </div>
-            </div>
+            </CustomScrollbar>
         </div>
     );
 };
