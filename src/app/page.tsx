@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 
-import { Search, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
 
 import FileUpload, { FileUploadRef } from "@/components/file-upload";
 import { RequestTable } from "@/components/request-table";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSearch } from "@/hooks/use-search";
+import { useSearchNavigation } from "@/hooks/use-search-navigation";
 import { useSession } from "@/lib/session-context";
 import { BurpSession } from "@/types/burp";
 import { HarSession } from "@/types/har";
@@ -40,6 +41,8 @@ export default function Home() {
     }, [searchTerm]);
 
     const { filteredEntries } = useSearch(session?.entries || []);
+    const { currentMatchIndex, totalMatches, navigateToNextMatch, navigateToPrevMatch } =
+        useSearchNavigation();
 
     useEffect(() => {
         if (!session && fileUploadRef.current) {
@@ -63,27 +66,57 @@ export default function Home() {
                             <h1 className="text-sm font-medium">Burpy</h1>
                         </div>
                         <div className="flex items-center space-x-2">
-                            {/* Search Input */}
-                            <div className="relative">
-                                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    placeholder="Search requests..."
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    className="h-9 w-64 pl-8 pr-8 font-mono text-sm"
-                                />
-                                {inputValue && (
-                                    <button
-                                        onClick={() => setInputValue("")}
-                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                )}
-                                {isDebouncing && (
-                                    <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                            {/* Search Input with Navigation */}
+                            <div className="flex items-center">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Search requests..."
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        className="h-9 w-64 rounded-r-none pl-8 pr-8 font-mono text-sm"
+                                    />
+                                    {inputValue && (
+                                        <button
+                                            onClick={() => setInputValue("")}
+                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                    {isDebouncing && (
+                                        <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                                            <div className="h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Match count and navigation */}
+                                {searchTerm && searchTerm.length >= 2 && (
+                                    <div className="flex h-9 items-center border border-l-0 border-input bg-background px-2">
+                                        <span className="min-w-[60px] text-center text-xs text-muted-foreground">
+                                            {totalMatches > 0
+                                                ? `${currentMatchIndex + 1}/${totalMatches}`
+                                                : "0/0"}
+                                        </span>
+                                        <div className="ml-1 flex">
+                                            <button
+                                                onClick={navigateToPrevMatch}
+                                                disabled={totalMatches === 0}
+                                                className="rounded p-0.5 hover:bg-accent disabled:opacity-50"
+                                                title="Previous match (Shift+Enter)"
+                                            >
+                                                <ChevronUp className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={navigateToNextMatch}
+                                                disabled={totalMatches === 0}
+                                                className="rounded p-0.5 hover:bg-accent disabled:opacity-50"
+                                                title="Next match (Enter)"
+                                            >
+                                                <ChevronDown className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>

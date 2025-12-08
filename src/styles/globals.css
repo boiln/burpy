@@ -160,4 +160,13 @@ html {
     .instant-select {
         transition: none !important;
     }
+
+    /* Search match highlighting */
+    .search-match {
+        @apply rounded-sm bg-yellow-500/40 text-inherit;
+    }
+
+    .search-match-active {
+        @apply bg-orange-500/70 ring-2 ring-orange-400;
+    }
 }

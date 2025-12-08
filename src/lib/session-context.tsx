@@ -1,8 +1,16 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+    useCallback,
+    useRef,
+} from "react";
 
-import type { BurpEntry , HighlightColor } from "@/types/burp";
+import type { BurpEntry, HighlightColor } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
 
 interface SessionContextType {
@@ -10,6 +18,12 @@ interface SessionContextType {
     selectedEntries: Set<BurpEntry | HarEntry>;
     searchTerm: string;
     setSearchTerm: (term: string) => void;
+    currentMatchIndex: number;
+    totalMatches: number;
+    setCurrentMatchIndex: (index: number) => void;
+    setTotalMatches: (count: number) => void;
+    navigateToNextMatch: () => void;
+    navigateToPrevMatch: () => void;
     handleSelectEntry: (entry: BurpEntry | HarEntry) => void;
     handleMultiSelectEntry: (
         entry: BurpEntry | HarEntry,
@@ -26,8 +40,40 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     const [selectedEntry, setSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
     const [selectedEntries, setSelectedEntries] = useState<Set<BurpEntry | HarEntry>>(new Set());
     const [lastSelectedEntry, setLastSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTermState] = useState("");
+    const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+    const [totalMatchesState, setTotalMatchesInternal] = useState(0);
     const [, setForceUpdate] = useState({});
+
+    const totalMatchesRef = useRef(0);
+    const prevSearchTermRef = useRef("");
+
+    const setTotalMatches = useCallback((count: number) => {
+        totalMatchesRef.current = count;
+        setTotalMatchesInternal(count);
+    }, []);
+
+    const setSearchTerm = useCallback((term: string) => {
+        // Only reset counts if the term actually changed
+        if (term !== prevSearchTermRef.current) {
+            prevSearchTermRef.current = term;
+            setSearchTermState(term);
+            setCurrentMatchIndex(0);
+            // Don't reset totalMatches here - let the navigation hook handle it
+        }
+    }, []);
+
+    const navigateToNextMatch = useCallback(() => {
+        const total = totalMatchesRef.current;
+        if (total === 0) return;
+        setCurrentMatchIndex((prev) => (prev + 1) % total);
+    }, []);
+
+    const navigateToPrevMatch = useCallback(() => {
+        const total = totalMatchesRef.current;
+        if (total === 0) return;
+        setCurrentMatchIndex((prev) => (prev - 1 + total) % total);
+    }, []);
 
     useEffect(() => {
         setIsClient(true);
@@ -120,6 +166,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 selectedEntries: isClient ? selectedEntries : new Set(),
                 searchTerm,
                 setSearchTerm,
+                currentMatchIndex,
+                totalMatches: totalMatchesState,
+                setCurrentMatchIndex,
+                setTotalMatches,
+                navigateToNextMatch,
+                navigateToPrevMatch,
                 handleSelectEntry,
                 handleMultiSelectEntry,
                 handleHighlightEntry,
@@ -143,6 +195,12 @@ export const useSession = () => {
             selectedEntries: new Set(),
             searchTerm: "",
             setSearchTerm: () => {},
+            currentMatchIndex: 0,
+            totalMatches: 0,
+            setCurrentMatchIndex: () => {},
+            setTotalMatches: () => {},
+            navigateToNextMatch: () => {},
+            navigateToPrevMatch: () => {},
             handleSelectEntry: () => {},
             handleMultiSelectEntry: () => {},
             handleHighlightEntry: () => {},

@@ -31,10 +31,7 @@ const highlightSearchTerm = (html: string, searchTerm: string): string => {
                 `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
                 "gi"
             );
-            return part.replace(
-                regex,
-                '<mark class="bg-yellow-500/50 text-inherit rounded-sm">$1</mark>'
-            );
+            return part.replace(regex, '<mark class="search-match">$1</mark>');
         })
         .join("");
 };
