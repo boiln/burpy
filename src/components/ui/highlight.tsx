@@ -27,7 +27,7 @@ export const Highlight = memo(function Highlight({
 
         const lowerText = text.toLowerCase();
         const lowerSearch = searchTerm.toLowerCase();
-        const result: { text: string; highlight: boolean }[] = [];
+        const result: { text: string; highlight: boolean; start: number }[] = [];
 
         let lastIndex = 0;
         let index = lowerText.indexOf(lowerSearch);
@@ -38,6 +38,7 @@ export const Highlight = memo(function Highlight({
                 result.push({
                     text: text.slice(lastIndex, index),
                     highlight: false,
+                    start: lastIndex,
                 });
             }
 
@@ -45,6 +46,7 @@ export const Highlight = memo(function Highlight({
             result.push({
                 text: text.slice(index, index + searchTerm.length),
                 highlight: true,
+                start: index,
             });
 
             lastIndex = index + searchTerm.length;
@@ -56,10 +58,11 @@ export const Highlight = memo(function Highlight({
             result.push({
                 text: text.slice(lastIndex),
                 highlight: false,
+                start: lastIndex,
             });
         }
 
-        return result.length > 0 ? result : [{ text, highlight: false }];
+        return result.length > 0 ? result : [{ text, highlight: false, start: 0 }];
     }, [text, searchTerm]);
 
     if (!searchTerm || searchTerm.length < 2) {
@@ -68,13 +71,13 @@ export const Highlight = memo(function Highlight({
 
     return (
         <span className={className}>
-            {parts.map((part, i) =>
+            {parts.map((part) =>
                 part.highlight ? (
-                    <mark key={i} className={highlightClassName}>
+                    <mark key={`h-${part.start}`} className={highlightClassName}>
                         {part.text}
                     </mark>
                 ) : (
-                    <span key={i}>{part.text}</span>
+                    <span key={`n-${part.start}`}>{part.text}</span>
                 )
             )}
         </span>

@@ -260,6 +260,8 @@ const TableHeader_ = ({ table }: { table: any }) => (
                                                 onMouseDown={header.getResizeHandler()}
                                                 onTouchStart={header.getResizeHandler()}
                                                 onDoubleClick={() => header.column.resetSize()}
+                                                role="separator"
+                                                aria-orientation="vertical"
                                                 className={cn(
                                                     "absolute bottom-0 right-0 h-4 w-[4px] cursor-col-resize touch-none select-none",
                                                     "border-r border-border",

@@ -113,6 +113,12 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>((props, ref) => {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => document.getElementById("file-upload")?.click()}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        document.getElementById("file-upload")?.click();
+                    }
+                }}
                 role="button"
                 tabIndex={0}
                 aria-label="Upload file"

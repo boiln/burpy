@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, forwardRef, type ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface CustomScrollbarProps {
@@ -37,7 +38,7 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
             const el = (containerRef as React.RefObject<HTMLDivElement>).current;
             if (!el) return;
             updateScrollState();
-            el.addEventListener("scroll", updateScrollState);
+            el.addEventListener("scroll", updateScrollState, { passive: true });
             const resizeObserver = new ResizeObserver(updateScrollState);
             resizeObserver.observe(el);
             return () => {
@@ -106,6 +107,8 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
                     ref={containerRef as React.RefObject<HTMLDivElement>}
                     tabIndex={tabIndex}
                     onKeyDown={onKeyDown}
+                    role="region"
+                    aria-label="Scrollable content"
                 >
                     {children}
                 </div>
@@ -114,6 +117,8 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
                     ref={trackRef}
                     className="relative w-3 flex-shrink-0 cursor-pointer border-l border-border bg-muted"
                     onMouseDown={handleTrackMouseDown}
+                    role="button"
+                    aria-label="Scrollbar track"
                 >
                     {showScrollbar && (
                         <div
@@ -123,6 +128,8 @@ export const CustomScrollbar = forwardRef<HTMLDivElement, CustomScrollbarProps>(
                                 top: thumbTop,
                             }}
                             onMouseDown={handleThumbMouseDown}
+                            role="button"
+                            aria-label="Scrollbar thumb"
                         />
                     )}
                 </div>

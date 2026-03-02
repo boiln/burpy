@@ -1,14 +1,6 @@
 "use client";
 
-import {
-    createContext,
-    useContext,
-    useState,
-    ReactNode,
-    useEffect,
-    useCallback,
-    useRef,
-} from "react";
+import { createContext, useContext, useReducer, ReactNode, useCallback } from "react";
 
 import type { BurpEntry, HighlightColor } from "@/types/burp";
 import type { HarEntry } from "@/types/har";
@@ -35,54 +27,151 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-export const SessionContextProvider = ({ children }: { children: ReactNode }) => {
-    const [isClient, setIsClient] = useState(false);
-    const [selectedEntry, setSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
-    const [selectedEntries, setSelectedEntries] = useState<Set<BurpEntry | HarEntry>>(new Set());
-    const [lastSelectedEntry, setLastSelectedEntry] = useState<BurpEntry | HarEntry | null>(null);
-    const [searchTerm, setSearchTermState] = useState("");
-    const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
-    const [totalMatchesState, setTotalMatchesInternal] = useState(0);
-    const [, setForceUpdate] = useState({});
+interface SessionState {
+    selectedEntry: BurpEntry | HarEntry | null;
+    selectedEntries: Set<BurpEntry | HarEntry>;
+    lastSelectedEntry: BurpEntry | HarEntry | null;
+    searchTerm: string;
+    currentMatchIndex: number;
+    totalMatches: number;
+    updateVersion: number;
+}
 
-    const totalMatchesRef = useRef(0);
-    const prevSearchTermRef = useRef("");
+type SessionAction =
+    | { type: "select-entry"; entry: BurpEntry | HarEntry }
+    | { type: "multi-select-ctrl"; entry: BurpEntry | HarEntry }
+    | { type: "multi-select-shift"; entry: BurpEntry | HarEntry }
+    | { type: "set-search-term"; term: string }
+    | { type: "set-current-match-index"; index: number }
+    | { type: "set-total-matches"; count: number }
+    | { type: "navigate-next" }
+    | { type: "navigate-prev" }
+    | { type: "force-update" };
+
+const initialState: SessionState = {
+    selectedEntry: null,
+    selectedEntries: new Set(),
+    lastSelectedEntry: null,
+    searchTerm: "",
+    currentMatchIndex: 0,
+    totalMatches: 0,
+    updateVersion: 0,
+};
+
+const sessionReducer = (state: SessionState, action: SessionAction): SessionState => {
+    switch (action.type) {
+        case "select-entry":
+            return {
+                ...state,
+                selectedEntry: action.entry,
+                selectedEntries: new Set([action.entry]),
+                lastSelectedEntry: action.entry,
+            };
+
+        case "multi-select-ctrl": {
+            const newSelectedEntries = new Set(state.selectedEntries);
+
+            if (newSelectedEntries.has(action.entry)) {
+                newSelectedEntries.delete(action.entry);
+            } else {
+                newSelectedEntries.add(action.entry);
+            }
+
+            return {
+                ...state,
+                selectedEntries: newSelectedEntries,
+                selectedEntry: action.entry,
+                lastSelectedEntry: action.entry,
+            };
+        }
+
+        case "multi-select-shift":
+            return {
+                ...state,
+                selectedEntry: action.entry,
+                lastSelectedEntry: action.entry,
+            };
+
+        case "set-search-term":
+            if (action.term === state.searchTerm) {
+                return state;
+            }
+
+            return {
+                ...state,
+                searchTerm: action.term,
+                currentMatchIndex: 0,
+            };
+
+        case "set-current-match-index":
+            return {
+                ...state,
+                currentMatchIndex: action.index,
+            };
+
+        case "set-total-matches":
+            return {
+                ...state,
+                totalMatches: action.count,
+            };
+
+        case "navigate-next":
+            if (state.totalMatches === 0) {
+                return state;
+            }
+
+            return {
+                ...state,
+                currentMatchIndex: (state.currentMatchIndex + 1) % state.totalMatches,
+            };
+
+        case "navigate-prev":
+            if (state.totalMatches === 0) {
+                return state;
+            }
+
+            return {
+                ...state,
+                currentMatchIndex:
+                    (state.currentMatchIndex - 1 + state.totalMatches) % state.totalMatches,
+            };
+
+        case "force-update":
+            return {
+                ...state,
+                updateVersion: state.updateVersion + 1,
+            };
+
+        default:
+            return state;
+    }
+};
+
+export const SessionContextProvider = ({ children }: { children: ReactNode }) => {
+    const [state, dispatch] = useReducer(sessionReducer, initialState);
 
     const setTotalMatches = useCallback((count: number) => {
-        totalMatchesRef.current = count;
-        setTotalMatchesInternal(count);
+        dispatch({ type: "set-total-matches", count });
     }, []);
 
     const setSearchTerm = useCallback((term: string) => {
-        // Only reset counts if the term actually changed
-        if (term !== prevSearchTermRef.current) {
-            prevSearchTermRef.current = term;
-            setSearchTermState(term);
-            setCurrentMatchIndex(0);
-            // Don't reset totalMatches here - let the navigation hook handle it
-        }
+        dispatch({ type: "set-search-term", term });
+    }, []);
+
+    const setCurrentMatchIndex = useCallback((index: number) => {
+        dispatch({ type: "set-current-match-index", index });
     }, []);
 
     const navigateToNextMatch = useCallback(() => {
-        const total = totalMatchesRef.current;
-        if (total === 0) return;
-        setCurrentMatchIndex((prev) => (prev + 1) % total);
+        dispatch({ type: "navigate-next" });
     }, []);
 
     const navigateToPrevMatch = useCallback(() => {
-        const total = totalMatchesRef.current;
-        if (total === 0) return;
-        setCurrentMatchIndex((prev) => (prev - 1 + total) % total);
-    }, []);
-
-    useEffect(() => {
-        setIsClient(true);
+        dispatch({ type: "navigate-prev" });
     }, []);
 
     const handleSelectEntry = (entry: BurpEntry | HarEntry) => {
-        setSelectedEntry(entry);
-        setSelectedEntries(new Set([entry]));
-        setLastSelectedEntry(entry);
+        dispatch({ type: "select-entry", entry });
     };
 
     const handleMultiSelectEntry = (
@@ -90,36 +179,23 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         mode: "single" | "ctrl" | "shift"
     ) => {
         if (mode === "single") {
-            setSelectedEntry(entry);
-            setSelectedEntries(new Set([entry]));
-            setLastSelectedEntry(entry);
+            dispatch({ type: "select-entry", entry });
             return;
         }
 
         if (mode === "ctrl") {
-            const newSelectedEntries = new Set(selectedEntries);
-
-            if (newSelectedEntries.has(entry)) {
-                newSelectedEntries.delete(entry);
-            } else {
-                newSelectedEntries.add(entry);
-            }
-
-            setSelectedEntries(newSelectedEntries);
-            setSelectedEntry(entry);
-            setLastSelectedEntry(entry);
+            dispatch({ type: "multi-select-ctrl", entry });
             return;
         }
 
-        if (mode === "shift" && lastSelectedEntry) {
-            setSelectedEntry(entry);
-            setLastSelectedEntry(entry);
+        if (mode === "shift" && state.lastSelectedEntry) {
+            dispatch({ type: "multi-select-shift", entry });
         }
     };
 
     const handleHighlightEntry = (entry: BurpEntry | HarEntry, color: HighlightColor | null) => {
-        if (selectedEntries.has(entry)) {
-            selectedEntries.forEach((selectedEntry) => {
+        if (state.selectedEntries.has(entry)) {
+            state.selectedEntries.forEach((selectedEntry) => {
                 if (color === null) {
                     delete selectedEntry.highlight;
                     return;
@@ -135,12 +211,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
         }
 
-        setForceUpdate({});
+        dispatch({ type: "force-update" });
     };
 
     const handleCommentEntry = (entry: BurpEntry | HarEntry, comment: string) => {
-        if (selectedEntries.has(entry)) {
-            selectedEntries.forEach((selectedEntry) => {
+        if (state.selectedEntries.has(entry)) {
+            state.selectedEntries.forEach((selectedEntry) => {
                 if (comment.trim() === "") {
                     delete selectedEntry.comment;
                     return;
@@ -156,18 +232,18 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
         }
 
-        setForceUpdate({});
+        dispatch({ type: "force-update" });
     };
 
     return (
         <SessionContext.Provider
             value={{
-                selectedEntry: isClient ? selectedEntry : null,
-                selectedEntries: isClient ? selectedEntries : new Set(),
-                searchTerm,
+                selectedEntry: state.selectedEntry,
+                selectedEntries: state.selectedEntries,
+                searchTerm: state.searchTerm,
                 setSearchTerm,
-                currentMatchIndex,
-                totalMatches: totalMatchesState,
+                currentMatchIndex: state.currentMatchIndex,
+                totalMatches: state.totalMatches,
                 setCurrentMatchIndex,
                 setTotalMatches,
                 navigateToNextMatch,
