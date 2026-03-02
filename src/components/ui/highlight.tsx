@@ -22,7 +22,7 @@ export const Highlight = memo(function Highlight({
 }: HighlightProps) {
     const parts = useMemo(() => {
         if (!searchTerm || searchTerm.length < 2) {
-            return [{ text, highlight: false }];
+            return [{ text, highlight: false, start: 0 }];
         }
 
         const lowerText = text.toLowerCase();
